@@ -61,7 +61,8 @@ jobs:
       - name: Publish
         if: steps.check.outputs.publish == 'true'
         env:
-          # Empty under trusted publishing: npm then uses the OIDC token.
+          # Empty under trusted publishing: npm then uses the OIDC token. Check on the first OIDC publish that
+          # setup-node's .npmrc line (_authToken=${NODE_AUTH_TOKEN}) with an empty value doesn't shadow OIDC.
           NODE_AUTH_TOKEN: ${{ vars.NPM_TRUSTED_PUBLISHING != 'true' && secrets.NPM_TOKEN || '' }}
         run: npm publish --provenance --access public
       - name: Tag
