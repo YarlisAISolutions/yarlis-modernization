@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="470" viewBox="0 0 1640 470" role="img" aria-labelledby="t d">
+  <title id="t">How it works, in four panels</title>
+  <desc id="d">Four-panel comic: 1 the robot analyst investigates the legacy code and pins rules to the exact lines; 2 it writes BRD, FRD and SRD with version stamps and traced IDs; 3 builders rebuild the mainframe as React, Spring Boot and DB2 blocks; 4 the robot checks a traceability matrix and reports what is built, verified and deployed.</desc>
+  <defs>
+    <style>
+      .ol{stroke:#0F1A30;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
+      .thin{stroke:#0F1A30;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+      .txt{font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+    </style>
+    <!-- reusable robot (head + body), origin at head top-left -->
+    <g id="robot">
+      <path d="M50 -4v-14" class="ol"/><circle cx="50" cy="-22" r="7" fill="#F59E0B" class="thin"/>
+      <rect x="10" y="-4" width="80" height="62" rx="18" fill="#14B8A6" class="ol"/>
+      <rect x="21" y="8" width="58" height="32" rx="11" fill="#FAF7F0" class="thin"/>
+      <circle cx="38" cy="24" r="6" fill="#0F1A30"/><circle cx="62" cy="24" r="6" fill="#0F1A30"/>
+      <circle cx="40" cy="22" r="2" fill="#fff"/><circle cx="64" cy="22" r="2" fill="#fff"/>
+      <path d="M41 47 Q50 54 59 47" fill="none" stroke="#0F1A30" stroke-width="4" stroke-linecap="round"/>
+      <rect x="18" y="58" width="64" height="58" rx="14" fill="#1B2A4A" class="ol"/>
+      <circle cx="50" cy="84" r="8" fill="#14B8A6"/>
+      <path d="M34 116v24M66 116v24" class="ol" stroke-width="9"/>
+    </g>
+  </defs>
+  <rect width="1640" height="470" fill="#FAF7F0"/>
+
+  <!-- ================= Panel 1: Analyze ================= -->
+  <g transform="translate(10 10)">
+    <rect width="395" height="450" rx="18" fill="#FFFFFF" class="ol"/>
+    <rect x="16" y="16" width="160" height="34" rx="10" fill="#1B2A4A"/>
+    <text x="96" y="39" text-anchor="middle" class="txt" font-size="18" font-weight="800" fill="#FAF7F0">1 · Analyze</text>
+    <!-- green screen -->
+    <rect x="30" y="70" width="210" height="150" rx="10" fill="#0F1A30" class="ol"/>
+    <g stroke="#22C55E" stroke-width="5" stroke-linecap="round">
+      <path d="M50 96h90M50 116h130M50 136h70M50 156h150M50 176h100M50 196h60"/>
+    </g>
+    <rect x="44" y="129" width="182" height="14" rx="4" fill="#F59E0B" fill-opacity="0.35"/>
+    <!-- corkboard with sticky notes -->
+    <rect x="262" y="70" width="116" height="150" rx="8" fill="#E8C9A0" class="ol"/>
+    <rect x="276" y="86" width="40" height="36" fill="#FDE68A" class="thin"/><text x="296" y="109" text-anchor="middle" class="txt" font-size="10" font-weight="800" fill="#0F1A30">RUL-1</text>
+    <rect x="324" y="96" width="40" height="36" fill="#BBF7D0" class="thin"/><text x="344" y="119" text-anchor="middle" class="txt" font-size="10" font-weight="800" fill="#0F1A30">RUL-2</text>
+    <rect x="290" y="150" width="40" height="36" fill="#FECACA" class="thin"/><text x="310" y="173" text-anchor="middle" class="txt" font-size="10" font-weight="800" fill="#0F1A30">F-01</text>
+    <!-- strings from code lines to notes -->
+    <path d="M226 136 Q252 110 280 104" fill="none" stroke="#F87171" stroke-width="3"/>
+    <path d="M206 156 Q260 150 328 114" fill="none" stroke="#F87171" stroke-width="3"/>
+    <path d="M196 176 Q250 190 292 168" fill="none" stroke="#F87171" stroke-width="3"/>
+    <!-- robot detective -->
+    <g transform="translate(130 260)">
+      <use href="#robot"/>
+      <path d="M8 -6 Q50 -30 92 -6 L86 4 Q50 -14 14 4 Z" fill="#B45309" class="thin"/>
+      <path d="M82 80 Q120 70 128 40" fill="none" class="ol" stroke-width="8"/>
+      <circle cx="132" cy="26" r="20" fill="#E6FFFA" fill-opacity="0.75" class="ol"/>
+      <path d="M146 40l12 12" class="ol" stroke-width="7"/>
+    </g>
+    <text x="198" y="436" text-anchor="middle" class="txt" font-size="15" font-weight="600" fill="#5B6B86">Every rule pinned to its exact source line</text>
+  </g>
+
+  <!-- ================= Panel 2: Document ================= -->
+  <g transform="translate(420 10)">
+    <rect width="395" height="450" rx="18" fill="#FFFFFF" class="ol"/>
+    <rect x="16" y="16" width="180" height="34" rx="10" fill="#1B2A4A"/>
+    <text x="106" y="39" text-anchor="middle" class="txt" font-size="18" font-weight="800" fill="#FAF7F0">2 · Document</text>
+    <!-- three stacks -->
+    <g transform="translate(30 90)">
+      <g><rect x="0" y="40" width="96" height="120" rx="8" fill="#FFFFFF" class="ol"/><text x="48" y="80" text-anchor="middle" class="txt" font-size="22" font-weight="800" fill="#1B2A4A">BRD</text><path d="M16 100h64M16 114h52M16 128h60" stroke="#14B8A6" stroke-width="4" stroke-linecap="round"/></g>
+      <g><rect x="116" y="20" width="96" height="140" rx="8" fill="#FFFFFF" class="ol"/><text x="164" y="60" text-anchor="middle" class="txt" font-size="22" font-weight="800" fill="#1B2A4A">FRD</text><path d="M132 80h64M132 94h52M132 108h60M132 122h48" stroke="#14B8A6" stroke-width="4" stroke-linecap="round"/></g>
+      <g><rect x="232" y="0" width="96" height="160" rx="8" fill="#FFFFFF" class="ol"/><text x="280" y="40" text-anchor="middle" class="txt" font-size="22" font-weight="800" fill="#1B2A4A">SRD</text><path d="M248 60h64M248 74h52M248 88h60M248 102h48M248 116h56" stroke="#14B8A6" stroke-width="4" stroke-linecap="round"/></g>
+      <!-- trace threads -->
+      <path d="M80 114 C100 100 120 100 132 94" fill="none" stroke="#F59E0B" stroke-width="3"/>
+      <path d="M196 108 C216 100 236 96 248 88" fill="none" stroke="#F59E0B" stroke-width="3"/>
+      <!-- version stamps -->
+      <g transform="translate(86 160)"><circle r="20" fill="#F59E0B" class="thin"/><text y="5" text-anchor="middle" class="txt" font-size="12" font-weight="800" fill="#0F1A30">v0.2</text></g>
+      <g transform="translate(202 160)"><circle r="20" fill="#F59E0B" class="thin"/><text y="5" text-anchor="middle" class="txt" font-size="12" font-weight="800" fill="#0F1A30">v0.2</text></g>
+      <g transform="translate(318 160)"><circle r="20" fill="#F59E0B" class="thin"/><text y="5" text-anchor="middle" class="txt" font-size="12" font-weight="800" fill="#0F1A30">v0.2</text></g>
+    </g>
+    <!-- archive box -->
+    <g transform="translate(250 300)">
+      <rect x="0" y="20" width="110" height="70" rx="6" fill="#E8C9A0" class="ol"/>
+      <rect x="-6" y="8" width="122" height="20" rx="4" fill="#D6B07E" class="ol"/>
+      <text x="55" y="66" text-anchor="middle" class="txt" font-size="14" font-weight="800" fill="#0F1A30">history/</text>
+      <rect x="20" y="-12" width="30" height="24" fill="#FFFFFF" class="thin"/><rect x="58" y="-8" width="30" height="20" fill="#FFFFFF" class="thin"/>
+    </g>
+    <!-- robot librarian -->
+    <g transform="translate(60 296) scale(0.72)"><use href="#robot"/></g>
+    <text x="198" y="436" text-anchor="middle" class="txt" font-size="15" font-weight="600" fill="#5B6B86">Standard sections, IDs traced, every edit versioned</text>
+  </g>
+
+  <!-- ================= Panel 3: Migrate ================= -->
+  <g transform="translate(830 10)">
+    <rect width="395" height="450" rx="18" fill="#FFFFFF" class="ol"/>
+    <rect x="16" y="16" width="160" height="34" rx="10" fill="#1B2A4A"/>
+    <text x="96" y="39" text-anchor="middle" class="txt" font-size="18" font-weight="800" fill="#FAF7F0">3 · Migrate</text>
+    <!-- old mainframe being dismantled -->
+    <g transform="translate(30 120)">
+      <rect x="0" y="60" width="100" height="160" rx="8" fill="#C9D3E3" class="ol"/>
+      <rect x="12" y="74" width="76" height="40" rx="6" fill="#0F1A30"/>
+      <path d="M24 90h36M24 100h24" stroke="#22C55E" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="30" cy="150" r="14" fill="#FAF7F0" class="thin"/><circle cx="70" cy="150" r="14" fill="#FAF7F0" class="thin"/>
+      <!-- lifted blocks -->
+      <rect x="18" y="20" width="44" height="30" rx="5" fill="#C9D3E3" class="ol" transform="rotate(-10 40 35)"/>
+    </g>
+    <!-- conveyor -->
+    <rect x="130" y="330" width="120" height="16" rx="8" fill="#9AA7BD" class="ol"/>
+    <circle cx="146" cy="338" r="5" fill="#0F1A30"/><circle cx="190" cy="338" r="5" fill="#0F1A30"/><circle cx="234" cy="338" r="5" fill="#0F1A30"/>
+    <path d="M150 312h70" stroke="#F59E0B" stroke-width="6" stroke-linecap="round"/><path d="M212 302l12 10-12 10" fill="none" stroke="#F59E0B" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- new stack: DB2 bottom, Spring middle, React top -->
+    <g transform="translate(262 120)">
+      <path d="M0 170v40c0 10 100 10 100 0v-40" fill="#F59E0B" class="ol"/>
+      <ellipse cx="50" cy="170" rx="50" ry="12" fill="#FCD9A0" class="ol"/>
+      <text x="50" y="205" text-anchor="middle" class="txt" font-size="15" font-weight="800" fill="#0F1A30">DB2</text>
+      <rect x="6" y="92" width="88" height="64" rx="10" fill="#22C55E" class="ol"/>
+      <path d="M30 140 C30 112 52 104 72 104 C72 128 60 142 30 140 Z" fill="#BBF7D0" class="thin"/>
+      <text x="50" y="86" text-anchor="middle" class="txt" font-size="13" font-weight="800" fill="#0F1A30">Spring Boot</text>
+      <rect x="6" y="10" width="88" height="58" rx="10" fill="#1B2A4A" class="ol"/>
+      <g transform="translate(50 39)" fill="none" stroke="#14B8A6" stroke-width="3"><ellipse rx="24" ry="9"/><ellipse rx="24" ry="9" transform="rotate(60)"/><ellipse rx="24" ry="9" transform="rotate(-60)"/><circle r="4" fill="#14B8A6"/></g>
+      <text x="50" y="4" text-anchor="middle" class="txt" font-size="13" font-weight="800" fill="#0F1A30">React</text>
+    </g>
+    <!-- tiny builder robot with hard hat -->
+    <g transform="translate(140 182) scale(0.75)">
+      <use href="#robot"/>
+      <path d="M10 -2 Q50 -36 90 -2 Z" fill="#F59E0B" class="thin"/>
+    </g>
+    <text x="198" y="436" text-anchor="middle" class="txt" font-size="15" font-weight="600" fill="#5B6B86">Every legacy piece gets a target, or a reason</text>
+  </g>
+
+  <!-- ================= Panel 4: Assess ================= -->
+  <g transform="translate(1240 10)">
+    <rect width="390" height="450" rx="18" fill="#FFFFFF" class="ol"/>
+    <rect x="16" y="16" width="150" height="34" rx="10" fill="#1B2A4A"/>
+    <text x="91" y="39" text-anchor="middle" class="txt" font-size="18" font-weight="800" fill="#FAF7F0">4 · Assess</text>
+    <!-- clipboard matrix -->
+    <g transform="translate(150 70)">
+      <rect x="0" y="0" width="220" height="230" rx="12" fill="#FFF3D6" class="ol"/>
+      <rect x="70" y="-12" width="80" height="24" rx="6" fill="#9AA7BD" class="ol"/>
+      <text x="110" y="40" text-anchor="middle" class="txt" font-size="15" font-weight="800" fill="#1B2A4A">RTM</text>
+      <g class="txt" font-size="13" font-weight="700" fill="#1B2A4A">
+        <text x="16" y="72">BR-001</text><text x="16" y="104">FR-012</text><text x="16" y="136">SR-031</text><text x="16" y="168">NFR-004</text><text x="16" y="200">FR-020</text>
+      </g>
+      <!-- status chips: implemented / verified / deployed -->
+      <g>
+        <circle cx="110" cy="67" r="9" fill="#22C55E"/><circle cx="140" cy="67" r="9" fill="#22C55E"/><circle cx="170" cy="67" r="9" fill="#22C55E"/>
+        <circle cx="110" cy="99" r="9" fill="#22C55E"/><circle cx="140" cy="99" r="9" fill="#F59E0B"/><circle cx="170" cy="99" r="9" fill="#9AA7BD"/>
+        <circle cx="110" cy="131" r="9" fill="#F59E0B"/><circle cx="140" cy="131" r="9" fill="#9AA7BD"/><circle cx="170" cy="131" r="9" fill="#9AA7BD"/>
+        <circle cx="110" cy="163" r="9" fill="#F87171"/><circle cx="140" cy="163" r="9" fill="#9AA7BD"/><circle cx="170" cy="163" r="9" fill="#9AA7BD"/>
+        <circle cx="110" cy="195" r="9" fill="#22C55E"/><circle cx="140" cy="195" r="9" fill="#9AA7BD"/><circle cx="170" cy="195" r="9" fill="#9AA7BD"/>
+      </g>
+      <g class="txt" font-size="10" font-weight="700" fill="#5B6B86" text-anchor="middle">
+        <text x="110" y="222">code</text><text x="140" y="222">test</text><text x="170" y="222">deploy</text>
+      </g>
+    </g>
+    <!-- robot pointing -->
+    <g transform="translate(26 236)">
+      <use href="#robot"/>
+      <path d="M82 76 Q118 60 130 34" fill="none" class="ol" stroke-width="8"/>
+    </g>
+    <!-- speech -->
+    <g transform="translate(20 70)">
+      <path d="M0 12a12 12 0 0 1 12-12h104a12 12 0 0 1 12 12v60a12 12 0 0 1-12 12H70l-14 24-6-24H12A12 12 0 0 1 0 72z" fill="#FFFFFF" class="thin"/>
+      <text x="64" y="30" text-anchor="middle" class="txt" font-size="13" font-weight="700" fill="#1B2A4A">Built ≠ tested</text>
+      <text x="64" y="50" text-anchor="middle" class="txt" font-size="13" font-weight="700" fill="#1B2A4A">≠ deployed.</text>
+      <text x="64" y="70" text-anchor="middle" class="txt" font-size="13" font-weight="700" fill="#1B2A4A">Evidence, please!</text>
+    </g>
+    <text x="195" y="436" text-anchor="middle" class="txt" font-size="15" font-weight="600" fill="#5B6B86">Gap report from evidence, not optimism</text>
+  </g>
+</svg>
