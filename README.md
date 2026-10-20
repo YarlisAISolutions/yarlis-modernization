@@ -79,11 +79,33 @@ python3 $S/legacy-code-analysis/scripts/inventory.py domains --inventory docs/an
 python3 $S/mainframe-modernization/scripts/mapgen.py --inventory docs/analysis/inventory.json --programs COSGN00C
 D=$S/requirements-docs/scripts/docver.py
 python3 $D init --type context --dir docs/requirements --project "Card Demo" --src ./legacy
-python3 $D init --type brd --dir docs/requirements
-python3 $D bump docs/requirements/BRD.md --level minor --summary "CR-001: audit trail" --sections "10, 11"
-python3 $D linkify docs/requirements && python3 $D trace docs/requirements --inject && python3 $D validate docs/requirements
-python3 $D rtm sync docs/requirements && python3 $D rtm summary docs/requirements
+python3 $D new-feature --module user-admin --feature sign-on          # BRD + FRD + SRD in docs/requirements/user-admin/sign-on/
+F=docs/requirements/user-admin/sign-on
+python3 $D bump $F/BRD.md --level minor --summary "CR-001: audit trail" --sections "10, 11"
+python3 $D linkify $F && python3 $D trace $F --inject && python3 $D validate $F
+python3 $D rtm sync $F && python3 $D rtm summary $F
+python3 $D index docs/requirements && python3 $D check docs/requirements      # catalogue + CI gate
 ```
+
+## Use with GitHub Copilot (and any team)
+
+The skills follow the open [Agent Skills](https://code.visualstudio.com/docs/agent-customization/agent-skills) format.
+GitHub Copilot in VS Code, Copilot CLI and the Copilot cloud agent load them straight from `.claude/skills/`, the same folder
+Claude Code uses, so there's one copy for both. One command installs the full team kit into your repository:
+
+```bash
+yarlis-modernization/scripts/install.sh /path/to/your-repo     # --dry-run first if you like
+```
+
+- **Copilot files:** repo-wide `copilot-instructions.md` and `AGENTS.md`, path-scoped `.instructions.md` files for
+  `docs/requirements/**`, the slash commands `/new-feature-requirements`, `/analyze-legacy`, `/change-request` and
+  `/assess-implementation`, a `requirements-analyst` custom agent with BRD → FRD → SRD handoffs, and `copilot-setup-steps.yml` for the cloud agent.
+- **Per-feature layout:** `docs/requirements/<module>/<feature>/{BRD,FRD,SRD}.md`, scaffolded with `docver.py new-feature`, plus a
+  generated `INDEX.md` catalogue showing versions and STALE flags.
+- **Guardrails:** a CI workflow (`docver.py check` for structure, traces, layout, unique IDs and index; `bumpcheck` so no edit merges
+  without a version bump), a PR checklist, and an issue form you can assign to Copilot.
+
+Team conventions, ownership, the review flow and the commonly missed items are in [docs/ADOPTION.md](docs/ADOPTION.md).
 
 ## Prompt templates
 
@@ -113,6 +135,7 @@ application (COBOL, CICS, BMS, JCL, VSAM, DB2, IMS, MQ; not included here). The 
 | | With skills | Without |
 |---|---|---|
 | Assertions passed (sign-on BRD; full BRD→FRD→SRD + audit change request) | **100%** | 56% |
+| Assertions passed (RTM + gap report: "how much of this BRD is built?") | **100%** | 85% |
 | Mermaid diagrams | 5 / 20 | 0 / 0 |
 | Evidence hyperlinked to source lines | 114 / 201 | 0 / 0 |
 | Version bump + revision rows + snapshots on change | yes | partial |
@@ -135,7 +158,12 @@ traceability, diagrams and clickable evidence. Expect more time and tokens per r
   legacy-code-analysis/     SKILL.md · scripts/inventory.py · references/
   requirements-docs/        SKILL.md · scripts/docver.py · assets/templates/ · references/
   mainframe-modernization/  SKILL.md · scripts/mapgen.py · references/
+.github/                    Copilot instructions, prompt files, custom agent, CI workflows, PR template, issue form
+AGENTS.md                   cross-agent instructions
 prompts/                    standard prompt structure + per-step templates + master prompt
+scripts/install.sh          installs the kit into another repository
+tests/                      synthetic mainframe fixture + selftest.sh (run in CI)
+docs/ADOPTION.md            team conventions and workflow
 docs/images/                logo and cartoons (SVG)
 ```
 

@@ -1,0 +1,7 @@
+      * Synthetic test program: menu.
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. MENU01.
+       PROCEDURE DIVISION.
+       MAIN-PARA.
+           EXEC CICS SEND MAP('MENU1A') MAPSET('MENU01') END-EXEC
+           EXEC CICS XCTL PROGRAM('ACCTUPD') END-EXEC.

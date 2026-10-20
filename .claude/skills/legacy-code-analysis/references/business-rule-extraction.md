@@ -58,6 +58,11 @@ plumbing, abend handling, screen attribute juggling, paging mechanics, logging.
 
 These details matter because functional-equivalence tests compare outputs to the cent.
 
+**Platform defaults** are part of the rule even though they're invisible in the code: CICS `STARTBR` without `EQUAL` positions on
+the first key ≥ the given key (GTEQ), `READ` without `UPDATE` takes no lock, COBOL `MOVE` truncates silently, and a terminal may
+upper-case input (`UCTRAN`). When a rule depends on one, name it in the rule and lower the Confidence until it's checked against the
+real system configuration.
+
 ## Coverage tracking
 
 Keep a short coverage table in the analysis notes so later iterations know what has been read:

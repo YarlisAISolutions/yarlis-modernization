@@ -1,0 +1,38 @@
+name: requirements-check
+
+# Gate for every pull request that touches requirements: standard structure, traces, evidence links,
+# per-feature layout, unique doc IDs, an up-to-date docs/requirements/INDEX.md, and a version bump
+# on every document whose content changed.
+on:
+  pull_request:
+    paths:
+      - "docs/requirements/**"
+      - ".claude/skills/requirements-docs/**"
+  push:
+    branches: [main]
+    paths:
+      - "docs/requirements/**"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Structure, traces, links, layout, index
+        run: |
+          if [ -d docs/requirements ]; then
+            python3 .claude/skills/requirements-docs/scripts/docver.py check docs/requirements
+          else
+            echo "no docs/requirements yet"
+          fi
+      - name: Every changed document was version-bumped
+        if: github.event_name == 'pull_request' && hashFiles('docs/requirements/**') != ''
+        run: python3 .claude/skills/requirements-docs/scripts/docver.py bumpcheck --base "origin/${{ github.base_ref }}" docs/requirements

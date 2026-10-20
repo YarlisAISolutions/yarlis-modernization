@@ -1,0 +1,41 @@
+name: Feature requirements
+description: Request BRD/FRD/SRD for a feature (can be assigned to Copilot or done with Claude Code)
+title: "req(<module>/<feature>): <short title>"
+labels: [requirements]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The docs are created in `docs/requirements/<module>/<feature>/` with the requirements-docs skill.
+        Assign this issue to Copilot, or run `/new-feature-requirements` in Copilot Chat or Claude Code.
+  - type: input
+    id: module
+    attributes: {label: Module (kebab-case), placeholder: accounts}
+    validations: {required: true}
+  - type: input
+    id: feature
+    attributes: {label: Feature (kebab-case), placeholder: account-update}
+    validations: {required: true}
+  - type: input
+    id: component
+    attributes: {label: Component (optional, kebab-case), placeholder: account-service}
+  - type: dropdown
+    id: docs
+    attributes:
+      label: Documents
+      options: ["BRD only", "BRD + FRD", "BRD + FRD + SRD", "Change to existing documents", "RTM + gap report (assess what's built)"]
+    validations: {required: true}
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Legacy transactions/jobs/programs, or a description of the feature. What's in and out.
+    validations: {required: true}
+  - type: textarea
+    id: context
+    attributes:
+      label: Business context and constraints
+      description: Owner, users, deadlines, regulations, decisions already made. Leave blank if unknown; unknowns become open questions.
+  - type: input
+    id: owner
+    attributes: {label: Business owner / approver}

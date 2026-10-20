@@ -1,0 +1,28 @@
+name: Copilot setup steps
+
+# Prepares the environment for the Copilot cloud agent so it can run the skill scripts.
+# The job name must be exactly copilot-setup-steps.
+on:
+  workflow_dispatch:
+  push:
+    paths: [.github/workflows/copilot-setup-steps.yml]
+  pull_request:
+    paths: [.github/workflows/copilot-setup-steps.yml]
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history: commit SHAs for evidence permalinks
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Smoke-test the skill scripts
+        run: |
+          python3 .claude/skills/requirements-docs/scripts/docver.py --help > /dev/null
+          python3 .claude/skills/legacy-code-analysis/scripts/inventory.py --help > /dev/null
+          python3 .claude/skills/mainframe-modernization/scripts/mapgen.py --help > /dev/null

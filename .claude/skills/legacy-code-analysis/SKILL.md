@@ -1,6 +1,7 @@
 ---
 name: legacy-code-analysis
 description: Analyze an existing codebase (mainframe COBOL/CICS/JCL/BMS/DB2/VSAM/IMS, PL/I, Assembler, RPG, Natural, or Java/.NET/Python/JS) and build an evidence-backed knowledge base. It covers the program inventory, call/transfer graph, CRUD matrix, data dictionary, screens, batch flows, candidate domains, and business rules with file:line sources. Use this whenever the user wants to understand, reverse-engineer, document, assess or modernize legacy source code. Typical requests are "analyze this COBOL", "what does this mainframe app do", "extract the business rules", "inventory the codebase", "map dependencies", or a migration assessment. Run it before writing a BRD/FRD/SRD from code. It works even when the user doesn't say "analysis", for example when they hand over a folder of .cbl/.jcl files and ask about it.
+license: Apache-2.0
 ---
 
 # Legacy code analysis

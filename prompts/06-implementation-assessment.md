@@ -18,7 +18,7 @@ Source code, configuration, schema and migrations, API definitions, UI, tests an
 deployment configuration and release notes. Artifacts I can't give you access to: [LIST or none].
 
 ## 6. Deliverables
-docs/requirements/RTM.md (one row per requirement) and docs/requirements/GAP-REPORT.md.
+docs/requirements/<module>/<feature>/RTM.md (one row per requirement) and GAP-REPORT.md in the same folder.
 
 ## 7. Rules
 - Code status (Implemented / Partially / Not implemented / Blocked / Not applicable / Not verifiable), verification status

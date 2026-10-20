@@ -67,7 +67,26 @@ No completion percentage unless priorities are agreed. With agreed priorities, `
 formula (Must 3, Should 2, Could 1; Implemented 1, Partially 0.5; Not applicable excluded) and the figure covers code
 only, not verification or deployment. Say that next to the number.
 
-## 6. Legacy migration variant
+## 6. Practicalities
+
+- **Unbuilt items:** a requirement with no code is `Runtime: Not deployed`, not Not verifiable. Not verifiable is for things that may
+  exist but can't be checked.
+- **Bulk entry:** write the assessments as JSON (`{"BR-001": {"Code status": "...", "Code evidence": "cbl/X.cbl:10-20 PARA", ...}}`) and run
+  `docver.py rtm apply <folder> --from assessments.json`, then `linkify`. It's safer than hand-aligning a 13-column table.
+- **Missing analysis notes:** if the BRD cites `docs/analysis/rules/*.md` or program cards that aren't in the repo, don't rebuild the
+  knowledge base just for the assessment. Follow the BRD's own source links to the code, and note in RTM §2 that the notes were unavailable.
+- **Platform defaults** (for example CICS `STARTBR` positioning GTEQ by default, or COBOL truncation without `ROUNDED`) can decide whether a
+  rule holds. When a status depends on one, say so in Confidence.
+- **Requirements vs rules:** `rtm summary` reports BRs and RULs separately; keep them apart in the gap narrative too.
+
+## 7. Legacy-only codebase (no target code yet)
+
+When the repository holds only the legacy system and the BRD describes the target state, say so in the first line of RTM §2 and of the
+gap report: **this is a baseline assessment**. "Implemented" then means *the legacy system already does this* (behaviour to reproduce or
+deliberately change), not *migrated*. Proposed requirements the legacy doesn't meet are Not implemented, transition requirements
+(migration, equivalence) are Not implemented until their tooling exists, and nothing counts as migrated progress.
+
+## 8. Legacy migration variant
 
 When assessing a migration in progress, the "current codebase" is the new React/Spring Boot code. Use the legacy
 references in each FR (linked legacy lines) to judge equivalence, and treat functional-equivalence test results as
