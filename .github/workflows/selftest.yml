@@ -1,12 +1,12 @@
 name: selftest
 
-# Exercises the three skill scripts end to end against tests/fixtures/mini on every change to them.
+# Exercises the three skill scripts and the l2m CLI end to end against tests/fixtures/mini on every change to them.
 on:
   pull_request:
-    paths: [".claude/skills/**", "tests/**", "scripts/**", ".github/workflows/selftest.yml"]
+    paths: [".claude/skills/**", "tests/**", "test/**", "scripts/**", "bin/**", "lib/**", "prompts/**", "package.json", ".github/workflows/selftest.yml"]
   push:
     branches: [main]
-    paths: [".claude/skills/**", "tests/**", "scripts/**"]
+    paths: [".claude/skills/**", "tests/**", "test/**", "scripts/**", "bin/**", "lib/**", "prompts/**", "package.json"]
 
 permissions:
   contents: read
@@ -22,8 +22,17 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
       - run: bash tests/selftest.sh
-      - name: Installer dry run
+      - name: CLI tests
+        run: node --test test/*.test.js
+      - name: Package contents
+        if: matrix.python == '3.12'
+        run: bash scripts/check-pack.sh
+      - name: Installer dry run (node and bash paths)
         run: |
           mkdir -p /tmp/target && git -C /tmp/target init -q
           bash scripts/install.sh /tmp/target --dry-run
+          L2M_BASH=1 bash scripts/install.sh /tmp/target --dry-run

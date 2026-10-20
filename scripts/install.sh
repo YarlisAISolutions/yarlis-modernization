@@ -4,6 +4,10 @@
 #
 #   scripts/install.sh <target-repo> [--force] [--dry-run]
 #
+# With Node 22+ on the PATH this runs `l2m init` (bin/l2m.js), which also writes l2m.config.json, docs/inputs/
+# and PROJECT-CONTEXT.md; set L2M_BASH=1 to use the bash installer below instead. The npm package does the same:
+# `npx @l2m/cli init <target-repo>`.
+#
 # Copies: .claude/skills/{legacy-code-analysis,requirements-docs,mainframe-modernization}, the Copilot files
 # (.github/copilot-instructions.md, instructions/, prompts/, agents/), the CI workflow, PR template, issue form,
 # AGENTS.md, prompts/, and creates docs/requirements/. Existing files are never overwritten without --force;
@@ -20,6 +24,13 @@ done
 TARGET="$(cd "$TARGET" && pwd)"
 [ "$TARGET" != "$SRC" ] || { echo "target is this repository"; exit 2; }
 
+if [ "${L2M_BASH:-0}" != 1 ] && command -v node > /dev/null && [ "$(node -p 'process.versions.node.split(".")[0]')" -ge 22 ]; then
+  args=("$TARGET")
+  [ $FORCE = 1 ] && args+=(--force)
+  [ $DRY = 1 ] && args+=(--dry-run)
+  exec node "$SRC/bin/l2m.js" init "${args[@]}"
+fi
+
 run() { if [ $DRY = 1 ]; then echo "would: $*"; else "$@"; fi; }
 
 copy() {  # copy <relative path> [destination relative path]
@@ -32,7 +43,12 @@ copy() {  # copy <relative path> [destination relative path]
 
 append_section() {  # append_section <relative path>: add our content once, between markers
   local rel="$1" begin="<!-- yarlis-modernization:begin -->" end="<!-- yarlis-modernization:end -->"
-  if [ ! -e "$TARGET/$rel" ]; then copy "$rel"; return; fi
+  if [ ! -e "$TARGET/$rel" ]; then  # with the markers, so a second run doesn't append it again
+    if [ $DRY = 1 ]; then echo "would: write $rel"; return; fi
+    mkdir -p "$(dirname "$TARGET/$rel")"
+    { printf '%s\n' "$begin"; cat "$SRC/$rel"; printf '%s\n' "$end"; } > "$TARGET/$rel"
+    echo "add      $rel"; return
+  fi
   if grep -qF "$begin" "$TARGET/$rel"; then echo "keep     $rel (section already present)"; return; fi
   if [ $DRY = 1 ]; then echo "would: append section to $rel"; return; fi
   { printf '\n%s\n' "$begin"; cat "$SRC/$rel"; printf '%s\n' "$end"; } >> "$TARGET/$rel"
@@ -42,6 +58,7 @@ append_section() {  # append_section <relative path>: add our content once, betw
 for s in legacy-code-analysis requirements-docs mainframe-modernization; do
   if [ -e "$TARGET/.claude/skills/$s" ] && [ $FORCE = 1 ]; then run rm -rf "$TARGET/.claude/skills/$s"; fi
   copy ".claude/skills/$s"
+  run rm -rf "$TARGET/.claude/skills/$s/scripts/__pycache__"
 done
 
 append_section ".github/copilot-instructions.md"

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/YarlisAISolutions/yarlis-modernization/main/l2m.config.schema.json",
+  "title": "l2m.config.json",
+  "description": "Inputs, folders and agent settings for the l2m CLI (@l2m/cli). Every field can be overridden by a command-line flag.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "project": { "type": "string", "description": "Product or project name used in prompts and new documents." },
+    "owner": { "type": "string", "description": "Business owner, or Unknown." },
+    "source": { "$ref": "#/$defs/paths", "description": "Legacy source tree(s). The first one is scanned by inventory.py; --src overrides." },
+    "docs": { "$ref": "#/$defs/paths", "description": "Existing documents, interview notes, specs and wiki links (files, folders or URLs); --docs adds more." },
+    "schema": { "$ref": "#/$defs/paths", "description": "DDL, DCLGEN and migration files or folders; --schema adds more." },
+    "targetStack": { "type": "string", "description": "e.g. React 19 + Spring Boot 3 (Java 21) + DB2 for z/OS 13, or Unknown." },
+    "migrationStrategy": { "type": "string", "description": "rewrite | convert | rehost per domain | Unknown." },
+    "analysisDir": { "type": "string", "default": "docs/analysis" },
+    "requirementsDir": { "type": "string", "default": "docs/requirements" },
+    "agent": { "type": "string", "description": "Default agent: claude, copilot, codex, gemini, or a name defined under agents." },
+    "agents": {
+      "type": "object",
+      "description": "Override or add agent command templates. {prompt} becomes the prompt text, {prompt_file} a file holding it; with neither, the prompt goes to stdin.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["cmd"],
+        "properties": {
+          "cmd": { "$ref": "#/$defs/argv" },
+          "yolo": { "$ref": "#/$defs/argv", "description": "Command used with --yolo (all permissions skipped)." }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "paths": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+    "argv": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+  }
+}

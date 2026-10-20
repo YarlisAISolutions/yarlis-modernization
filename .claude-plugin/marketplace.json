@@ -1,0 +1,28 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "yarlis-modernization",
+  "description": "Legacy modernization skills: legacy-code analysis, versioned BRD/FRD/SRD/RTM documents and the mainframe → React/Spring Boot/DB2 mapping. The same skills ship in the @l2m/cli npm package.",
+  "owner": {
+    "name": "Yarlis AI Solutions"
+  },
+  "plugins": [
+    {
+      "name": "l2m",
+      "description": "Analyze legacy code (COBOL, CICS, JCL, BMS, DB2, VSAM, IMS and more) and write versioned, traceable BRD, FRD, SRD, RTM and gap reports, plus the React + Spring Boot + DB2 migration design.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Yarlis AI Solutions"
+      },
+      "license": "Apache-2.0",
+      "homepage": "https://github.com/YarlisAISolutions/yarlis-modernization",
+      "category": "development",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./.claude/skills/legacy-code-analysis",
+        "./.claude/skills/requirements-docs",
+        "./.claude/skills/mainframe-modernization"
+      ]
+    }
+  ]
+}
