@@ -36,7 +36,7 @@ give the evidence as a link (file path and lines, symbol, endpoint, migration, t
 access an artifact, say what you couldn't inspect and mark the affected assessment Not verifiable.
 
 ## 6. Deliverables
-docs/requirements/: PROJECT-CONTEXT.md, BRD.md, FRD.md, SRD.md, RTM.md, GAP-REPORT.md, using the standard templates.
+docs/requirements/PROJECT-CONTEXT.md once per repository; per feature docs/requirements/<module>/<feature>/{BRD,FRD,SRD,RTM,GAP-REPORT}.md (docver.py new-feature), using the standard templates; docs/requirements/INDEX.md regenerated with docver.py index.
 - BRD: purpose, owner, version, approval; executive summary; context and problem; vision and outcomes; objectives and
   metrics; stakeholders and decision owners; current process and pain points; target process; scope; business requirements
   (BR-001…); business rules and policy constraints; benefits and measurement; assumptions, dependencies, constraints;

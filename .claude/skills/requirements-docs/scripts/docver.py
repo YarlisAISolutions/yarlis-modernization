@@ -81,7 +81,8 @@ MERMAID_TYPES = ("flowchart", "graph", "sequenceDiagram", "classDiagram", "state
 LEGACY_CODE_LANGS = ("cobol", "cbl", "jcl", "pli", "pl1", "asm", "hlasm", "rexx", "rpg", "rpgle", "natural", "easytrieve", "bms", "cics")
 FINAL_STATUSES = ("Approved", "Baselined")
 # `path/to/file.ext:12` or `path:12-40`, optionally inside backticks, not already a link target
-EVIDENCE_RX = re.compile(r"(?<![\[(/\w])`?((?:[\w.$#@-]+/)*[\w.$#@-]+\.[A-Za-z0-9]{1,8}):(\d+)(?:-(\d+))?`?(?![\])])")
+# optional surrounding backticks are consumed (group "q" must match on both sides); a reference may follow "(" or a space
+EVIDENCE_RX = re.compile(r"(?<![\w/.\[`$#@-])(?P<q>`?)((?:[\w.$#@-]+/)*[\w.$#@-]+\.[A-Za-z][A-Za-z0-9]{0,7}):(\d+)(?:-(\d+))?(?P=q)(?![\w-])")
 
 
 # --------------------------------------------------------------------------- parsing
@@ -173,11 +174,14 @@ class Doc:
         return defs, dups
 
 
-def find_docs(paths, types=None):
+def find_docs(paths, types=None, recursive=False):
     docs = []
     for p in paths:
         p = Path(p)
-        files = sorted(p.glob("*.md")) if p.is_dir() else [p]
+        if p.is_dir():
+            files = sorted(f for f in (p.rglob("*.md") if recursive else p.glob("*.md")) if "history" not in f.parts)
+        else:
+            files = [p]
         for f in files:
             try:
                 d = Doc(f)
@@ -296,7 +300,7 @@ def linkify_text(text: str, ctx: dict, doc_dir: Path):
 
         def rep(m):
             nonlocal count
-            path, l1, l2 = m.group(1), int(m.group(2)), int(m.group(3)) if m.group(3) else None
+            path, l1, l2 = m.group(2), int(m.group(3)), int(m.group(4)) if m.group(4) else None
             if local_root and local_root.is_dir() and not (local_root / path).exists():
                 missing.add(path)
             href = source_link(path, l1, l2, ctx, doc_dir)
@@ -341,15 +345,160 @@ def cmd_init(a):
             "{{AUTHOR}}": a.author, "{{DERIVED_FROM}}": json.dumps(derived),
             "{{OWNER}}": a.owner or ctx.get("business_owner") or "Unknown",
             "{{SOURCE_BASELINE}}": a.source_baseline or "", "{{TARGET_STACK}}": a.target_stack or ctx.get("target_stack", ""),
-            "{{REPO_URL}}": a.repo_url or g.get("url", ""), "{{REPO_REF}}": a.repo_ref or g.get("ref", ""),
+            "{{REPO_URL}}": a.repo_url or g.get("url", "") or ctx.get("repo_url", ""),
+            "{{REPO_REF}}": a.repo_ref or g.get("ref", "") or ctx.get("repo_ref", ""),
             "{{SOURCE_ROOT}}": _root_ref(Path(a.src), out.parent) if a.src else "",
             "{{REPO_SUBDIR}}": os.path.relpath(Path(a.src).resolve(), Path(g["top"])) if g.get("top") and a.src else ""}
     for k, v in repl.items():
         text = text.replace(k, v)
     text = text.replace('repo_subdir: "."', 'repo_subdir: ""')
+    for key in ("module", "feature", "component"):
+        if getattr(a, key, None):
+            text = set_fm(text, key, f'"{getattr(a, key)}"')
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text)
     print(f"Created {out} ({t} {doc_id} v0.1.0)" + (f", derived from {', '.join(str(d['doc_id']) + ' v' + d['version'] for d in derived)}" if derived else ""))
+
+
+SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+def cmd_new_feature(a):
+    """Scaffold docs/requirements/<module>/<feature>/ with the chosen documents, chained by derived_from."""
+    for name, v in (("module", a.module), ("feature", a.feature), ("component", a.component)):
+        if v and not SLUG.match(v):
+            sys.exit(f"--{name} '{v}' must be kebab-case (lowercase letters, digits, hyphens), e.g. account-maintenance")
+    root = Path(a.root)
+    if not (root / "PROJECT-CONTEXT.md").exists():
+        sys.exit(f"{root}/PROJECT-CONTEXT.md not found: create it first (docver.py init --type context --dir {root} --src <source>)")
+    folder = root / a.module / a.feature
+    ctx = load_context(root)
+    stem = f"{a.module}-{a.feature}".upper()
+    title = a.title or a.feature.replace("-", " ").title()
+    created = []
+    for t in [x.strip().upper() for x in a.docs.split(",") if x.strip()]:
+        if t not in ("BRD", "FRD", "SRD", "RTM", "GAP"):
+            sys.exit(f"unknown document type {t}")
+        out = folder / DOC_TYPES[t]["file"]
+        if out.exists():
+            print(f"exists, skipped: {out}")
+            continue
+        ns = argparse.Namespace(type=t, dir=str(folder), out=None, project=f"{ctx.get('project', 'Project')}: {title}",
+                                owner=a.owner, id=f"{t}-{stem}", author=a.author, derived_from=None,
+                                source_baseline=a.source_baseline, target_stack=None, src=None, repo_url=None,
+                                repo_ref=None, force=False, module=a.module, feature=a.feature, component=a.component)
+        cmd_init(ns)
+        created.append(out)
+    if created:
+        print(f"Next: fill the documents (BRD first), then: docver.py validate {folder} && docver.py index {root}")
+
+
+def scan_tree(root: Path):
+    """All document sets under root, grouped by folder."""
+    groups = defaultdict(list)
+    for d in find_docs([root], recursive=True):
+        if d.type != "CONTEXT":
+            groups[d.path.parent].append(d)
+    return groups
+
+
+def render_index(root: Path) -> str:
+    groups = scan_tree(root)
+    lines = ["# Requirements index", "", "Generated by `docver.py index`; do not edit by hand. One row per document set "
+             "(feature folder). Version cells show `version (status)`; **STALE** means the document was derived from an "
+             "older upstream version.", "", "| Module | Feature | Component | BRD | FRD | SRD | RTM | IDs (BR/FR/SR) | Open questions |",
+             "|---|---|---|---|---|---|---|---|---|"]
+    for folder in sorted(groups, key=lambda p: str(p)):
+        docs = {d.type: d for d in groups[folder]}
+        any_d = next(iter(docs.values()))
+        rel = folder.relative_to(root).as_posix() if folder != root else "."
+        parts = rel.split("/")
+        module = any_d.fm.get("module") or (parts[0] if len(parts) >= 2 else "—")
+        feature = any_d.fm.get("feature") or (parts[1] if len(parts) >= 2 else rel)
+        comp = any_d.fm.get("component") or "—"
+
+        def cell(t):
+            d = docs.get(t)
+            if not d:
+                return "—"
+            stale = any(pin.get("version") != u.version for pin, u in resolve_upstream(d) if pin.get("doc_id") == u.fm.get("doc_id"))
+            return f"[{d.version} ({d.fm.get('status')})]({(Path(rel) / d.path.name).as_posix()})" + (" **STALE**" if stale else "")
+        counts = Counter()
+        oq = 0
+        for d in docs.values():
+            for i in d.definitions()[0]:
+                counts[i.split("-")[0]] += 1
+            m = re.search(r"^## \d+\.\s+Open Questions.*?\n(.*?)(?=^## |\Z)", d.text, re.S | re.M)
+            if m:
+                oq += sum(1 for l in m.group(1).splitlines() if re.match(r"^\|\s*[\w-]+\s*\|", l)
+                          and not re.match(r"^\|\s*#\s*\|", l) and not re.match(r"^\|[-| :]+\|$", l))
+        lines.append(f"| {module} | {feature} | {comp} | {cell('BRD')} | {cell('FRD')} | {cell('SRD')} | {cell('RTM')} | "
+                     f"{counts['BR']}/{counts['FR']}/{counts['SR']} | {oq} |")
+    return "\n".join(lines) + "\n"
+
+
+def cmd_index(a):
+    root = Path(a.root)
+    text = render_index(root)
+    (root / "INDEX.md").write_text(text)
+    print(text)
+
+
+def cmd_check(a):
+    """CI gate: validate every document set under root, unique doc_ids, layout and an up-to-date INDEX.md."""
+    root = Path(a.root)
+    rc = 0
+    for folder, docs in sorted(scan_tree(root).items(), key=lambda x: str(x[0])):
+        rel = folder.relative_to(root).as_posix() if folder != root else "."
+        if a.layout == "module/feature" and len(rel.split("/")) != 2 and rel != ".":
+            print(f"ERROR  {rel}: documents must live in <module>/<feature>/ (kebab-case), e.g. accounts/account-update")
+            rc = 1
+        for part in rel.split("/"):
+            if rel != "." and not SLUG.match(part):
+                print(f"ERROR  {rel}: folder name '{part}' is not kebab-case")
+                rc = 1
+    ns = argparse.Namespace(paths=[str(root)], strict=a.strict)
+    try:
+        cmd_validate(ns)
+    except SystemExit as e:
+        rc |= int(e.code or 0) if str(e.code).isdigit() else 1
+    idx = root / "INDEX.md"
+    if idx.exists() and idx.read_text() != render_index(root):
+        print(f"ERROR  {idx} is out of date: run docver.py index {root} and commit it")
+        rc = 1
+    elif not idx.exists():
+        print(f"WARN   {idx} missing: run docver.py index {root}")
+    print("check: FAILED" if rc else "check: OK")
+    sys.exit(rc)
+
+
+def cmd_bumpcheck(a):
+    """CI: every document whose authored content changed versus --base must have a higher version."""
+    def git(*args):
+        return subprocess.run(["git", *args], capture_output=True, text=True)
+    changed = git("diff", "--name-only", a.base, "--", a.root).stdout.split()
+    strip = lambda t: re.sub(r"<!-- (\w+):begin -->.*?<!-- \1:end -->", "", split_front_matter(t)[1], flags=re.S)
+    rc = 0
+    for f in changed:
+        p = Path(f)
+        if p.suffix != ".md" or "history" in p.parts or p.name == "INDEX.md" or not p.exists():
+            continue
+        old = git("show", f"{a.base}:{f}")
+        if old.returncode:
+            continue  # new file
+        new_doc, old_fm = Doc(p), parse_fm(split_front_matter(old.stdout)[0] or "")
+        if new_doc.type not in DOC_TYPES or new_doc.type == "CONTEXT":
+            continue
+        if strip(old.stdout) != strip(new_doc.text):
+            try:
+                if parse_ver(new_doc.version) <= parse_ver(old_fm.get("version", "0.0.0")):
+                    print(f"ERROR  {f}: content changed but version is still {new_doc.version}; run docver.py bump before editing")
+                    rc = 1
+            except ValueError as e:
+                print(f"ERROR  {f}: {e}")
+                rc = 1
+    print("bumpcheck: FAILED" if rc else "bumpcheck: OK")
+    sys.exit(rc)
 
 
 def cmd_bump(a):
@@ -538,15 +687,22 @@ def validate_doc(doc: Doc, strict: bool, all_docs=None):
 
     # evidence must be links
     if doc.type in REQ_DOCS + ("RTM",):
-        unlinked = 0
+        unlinked, in_code = 0, False
+        link_rx = re.compile(r"(\[(?:[^\[\]]|\[[^\]]*\])*\]\([^)]*\))")
         for i, l in enumerate(doc.clean_lines, 1):
             if l.startswith("```"):
+                in_code = not in_code
                 continue
-            for m in EVIDENCE_RX.finditer(l):
-                pre = l[:m.start()]
-                if pre.endswith("[") or pre.endswith("[`") or re.search(r"\]\([^)]*$", pre):
-                    continue
-                unlinked += 1
+            if in_code:
+                continue
+            parts = link_rx.split(l)
+            unlinked += sum(len(EVIDENCE_RX.findall(p)) for p in parts[::2])
+            # a link whose label lines and URL anchor disagree (e.g. damaged by an old linkify) is broken evidence
+            for lab in re.finditer(r"\[`?[^\]`]+:(\d+)(?:-(\d+))?`?\]\([^)#]*#L(\d+)(?:-L?(\d+))?\)", l):
+                if lab.group(1) != lab.group(3) or (lab.group(2) or "") != (lab.group(4) or ""):
+                    errors.append(f"L{i}: evidence link label and anchor disagree: {lab.group(0)[:80]}")
+                elif re.match(r"\d", l[lab.end():lab.end() + 1]):
+                    errors.append(f"L{i}: evidence link is followed by a stray digit (truncated line number): {lab.group(0)[:60]}…{l[lab.end():lab.end() + 3]}")
         if unlinked:
             warns.append(f"{unlinked} source reference(s) like path:line are not hyperlinks (run docver.py linkify)")
 
@@ -618,12 +774,23 @@ def validate_doc(doc: Doc, strict: bool, all_docs=None):
 
 
 def cmd_validate(a):
-    docs = find_docs(a.paths)
+    docs = find_docs(a.paths, recursive=True)
     if not docs:
         sys.exit("no requirements documents found")
-    siblings = find_docs({Path(p).parent if Path(p).is_file() else Path(p) for p in a.paths})
+    by_dir = defaultdict(list)  # each feature folder is its own document set (IDs are local to it)
+    for d in find_docs({Path(p).parent if Path(p).is_file() else Path(p) for p in a.paths}, recursive=True):
+        by_dir[d.path.parent.resolve()].append(d)
     rc = 0
+    seen_ids = {}
     for d in docs:
+        did = d.fm.get("doc_id")
+        if did and d.type != "CONTEXT":
+            if did in seen_ids and seen_ids[did] != d.path:
+                print(f"== {d.path}\n  ERROR  doc_id {did} is also used by {seen_ids[did]} (doc_ids must be unique across the repository)")
+                rc = 1
+            seen_ids.setdefault(did, d.path)
+    for d in docs:
+        siblings = by_dir[d.path.parent.resolve()]
         if d.type == "CONTEXT":
             missing = [k for k in ("project", "business_owner") if not d.fm.get(k)]
             links = "permalinks" if d.fm.get("repo_url") and d.fm.get("repo_ref") else "relative links" if d.fm.get("source_root") else "NO link target"
@@ -681,6 +848,20 @@ def cmd_linkify(a):
 
 # --------------------------------------------------------------------------- trace
 
+RANGE_RX = re.compile(r"\b([A-Z]{1,4})-(\d{2,4})\s*(?:\.\.|…|–|—|\bto\b|\bthrough\b)\s*(?:\1-)?(\d{2,4})\b")
+
+
+def expand_ranges(text: str) -> str:
+    """'RUL-011..RUL-014' / 'FR-010 to 012' -> every ID in between (so traces don't lose the middle)."""
+    def rep(m):
+        p, a, b = m.group(1), int(m.group(2)), int(m.group(3))
+        if b < a or b - a > 200:
+            return m.group(0)
+        w = len(m.group(2))
+        return ", ".join(f"{p}-{n:0{w}d}" for n in range(a, b + 1))
+    return RANGE_RX.sub(rep, text)
+
+
 def build_trace(docs):
     by_type = {t: [d for d in docs if d.type == t] for t in DOC_TYPES}
     defs = {}
@@ -690,7 +871,7 @@ def build_trace(docs):
             if block.startswith("|"):
                 cells = split_row(block)
                 name = cells[1] if len(cells) > 1 else name
-            refs = sorted({f"{p}-{n}" for p, n in ID_RX.findall(block)} - {ident})
+            refs = sorted({f"{p}-{n}" for p, n in ID_RX.findall(expand_ranges(block))} - {ident})
             defs[ident] = {"doc": d, "name": name[:70], "refs": refs, "block": block}
 
     def children(ident, prefixes):
@@ -780,6 +961,28 @@ def cmd_rtm(a):
     if not rtm_path.exists():
         sys.exit(f"{rtm_path} not found: docver.py init --type rtm --dir {d_dir}")
     rtm = Doc(rtm_path)
+    if a.action == "apply":
+        # merge assessments from JSON: {"BR-001": {"Code status": "...", ...}} or [{"ID": "BR-001", ...}]
+        if not a.from_file:
+            sys.exit("rtm apply needs --from <assessments.json>")
+        data = json.loads(Path(a.from_file).read_text())
+        if isinstance(data, list):
+            data = {x["ID"]: x for x in data}
+        editable = RTM_COLS[5:]
+        rows = rtm_rows(rtm) or []
+        known = {r["ID"] for r in rows}
+        unknown = sorted(set(data) - known)
+        if unknown:
+            sys.exit(f"IDs not in the RTM (run rtm sync first): {', '.join(unknown)}")
+        for r in rows:
+            for k, v in data.get(r["ID"], {}).items():
+                if k in editable:
+                    r[k] = str(v).replace("|", "\\|").replace("\n", " ")
+                elif k != "ID":
+                    sys.exit(f"{r['ID']}: column '{k}' can't be set by apply (allowed: {', '.join(editable)})")
+        rtm_path.write_text(inject(rtm.text, "rtm", render_rtm(rows)))
+        print(f"applied assessments to {len(data)} row(s); now run linkify, rtm summary and validate")
+        return
     if a.action == "sync":
         docs = find_docs([d_dir], REQ_DOCS)
         _, _, _, defs = build_trace(docs)
@@ -791,7 +994,9 @@ def cmd_rtm(a):
             retired = bool(re.search(r"\*\*Status:\*\*\s*Retired", v["block"]))
             base = {"ID": rid, "Source": f"{v['doc'].type} v{v['doc'].version}", "Summary": v["name"].replace("|", "/"),
                     "Priority": prio if prio in ("Must", "Should", "Could", "Won't") else "Unknown",
-                    "Related": ", ".join(v["refs"]) or "—"}
+                    # forward references plus back-links (e.g. rules whose "Applies to" names this BR)
+                    "Related": ", ".join(sorted(set(v["refs"]) | {i for i, w in defs.items() if rid in w["refs"]},
+                                                key=lambda x: (x.split("-")[0], int(x.split("-")[1])))) or "—"}
             if rid in existing:
                 r = existing.pop(rid)
                 r.update(base)
@@ -814,13 +1019,20 @@ def cmd_rtm(a):
         return
     # summary
     rows = [r for r in (rtm_rows(rtm) or []) if not r["Summary"].startswith("[RETIRED]")]
-    by_doc = defaultdict(Counter)
+    # requirements and candidate rules are counted apart: mixing them inflates "Implemented"
+    groups = [("BRD business requirements (BR)", ("BR",)), ("BRD business rules (RUL)", ("RUL",)),
+              ("FRD functional requirements (FR)", ("FR",)), ("SRD system requirements (SR/NFR/IFR/DR)", ("SR", "NFR", "IFR", "DR"))]
+    by_grp = defaultdict(Counter)
     for r in rows:
-        by_doc[r["Source"].split()[0]][r["Code status"]] += 1
-    lines = ["**Code implementation status by document**", "", "| Document | " + " | ".join(CODE_STATUS) + " | Total |", "|" + "---|" * (len(CODE_STATUS) + 2)]
-    for doc_t in REQ_DOCS:
-        c = by_doc.get(doc_t, Counter())
-        lines.append(f"| {doc_t} | " + " | ".join(str(c[s]) for s in CODE_STATUS) + f" | {sum(c.values())} |")
+        pfx = r["ID"].split("-")[0]
+        g = next((name for name, ps in groups if pfx in ps), "Other")
+        by_grp[g][r["Code status"]] += 1
+    lines = ["**Code implementation status by document and kind**", "", "| Document / kind | " + " | ".join(CODE_STATUS) + " | Total |",
+             "|" + "---|" * (len(CODE_STATUS) + 2)]
+    for name, _ in groups:
+        c = by_grp.get(name, Counter())
+        if sum(c.values()):
+            lines.append(f"| {name} | " + " | ".join(str(c[s]) for s in CODE_STATUS) + f" | {sum(c.values())} |")
     tot = Counter(r["Code status"] for r in rows)
     lines.append("| **All** | " + " | ".join(str(tot[s]) for s in CODE_STATUS) + f" | {len(rows)} |")
     vc, rc = Counter(r["Verification status"] for r in rows), Counter(r["Runtime status"] for r in rows)
@@ -913,6 +1125,28 @@ def main():
     i.add_argument("--repo-url")
     i.add_argument("--repo-ref")
     i.add_argument("--force", action="store_true")
+    i.add_argument("--module", help="module slug recorded in front matter")
+    i.add_argument("--feature", help="feature slug recorded in front matter")
+    i.add_argument("--component", help="component slug recorded in front matter")
+    nf = sub.add_parser("new-feature", help="scaffold <root>/<module>/<feature>/ with BRD/FRD/SRD (and optionally RTM/GAP)")
+    nf.add_argument("--module", required=True)
+    nf.add_argument("--feature", required=True)
+    nf.add_argument("--component", help="primary component this feature belongs to (optional)")
+    nf.add_argument("--title", help="human title, default from the feature slug")
+    nf.add_argument("--docs", default="brd,frd,srd", help="comma list of brd,frd,srd,rtm,gap")
+    nf.add_argument("--root", default="docs/requirements")
+    nf.add_argument("--owner")
+    nf.add_argument("--author", default="Claude (draft)")
+    nf.add_argument("--source-baseline")
+    ix = sub.add_parser("index", help="write <root>/INDEX.md: every feature's documents, versions, staleness, counts")
+    ix.add_argument("root", nargs="?", default="docs/requirements")
+    ck = sub.add_parser("check", help="CI gate: validate all document sets, layout, unique doc_ids, INDEX.md up to date")
+    ck.add_argument("root", nargs="?", default="docs/requirements")
+    ck.add_argument("--strict", action="store_true")
+    ck.add_argument("--layout", choices=["module/feature", "any"], default="module/feature")
+    bc = sub.add_parser("bumpcheck", help="CI: fail if a document's content changed vs --base without a version bump")
+    bc.add_argument("--base", required=True, help="git ref to compare with, e.g. origin/main")
+    bc.add_argument("root", nargs="?", default="docs/requirements")
     b = sub.add_parser("bump")
     b.add_argument("path")
     b.add_argument("--level", choices=["major", "minor", "patch"], default="minor")
@@ -936,7 +1170,8 @@ def main():
     t.add_argument("dir")
     t.add_argument("--inject", action="store_true")
     r = sub.add_parser("rtm")
-    r.add_argument("action", choices=["sync", "summary"])
+    r.add_argument("action", choices=["sync", "apply", "summary"])
+    r.add_argument("--from", dest="from_file", help="apply: JSON file of assessments keyed by requirement ID")
     r.add_argument("dir")
     r.add_argument("--weighted", action="store_true", help="add a priority-weighted completion figure (only if all priorities are known)")
     s = sub.add_parser("status")
@@ -946,7 +1181,7 @@ def main():
     df.add_argument("--against")
     df.add_argument("--full", action="store_true")
     a = ap.parse_args()
-    {"init": cmd_init, "bump": cmd_bump, "validate": cmd_validate, "linkify": cmd_linkify, "trace": cmd_trace,
+    {"init": cmd_init, "new-feature": cmd_new_feature, "index": cmd_index, "check": cmd_check, "bumpcheck": cmd_bumpcheck, "bump": cmd_bump, "validate": cmd_validate, "linkify": cmd_linkify, "trace": cmd_trace,
      "rtm": cmd_rtm, "status": cmd_status, "diff": cmd_diff}[a.cmd](a)
 
 

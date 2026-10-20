@@ -1,0 +1,29 @@
+name: selftest
+
+# Exercises the three skill scripts end to end against tests/fixtures/mini on every change to them.
+on:
+  pull_request:
+    paths: [".claude/skills/**", "tests/**", "scripts/**", ".github/workflows/selftest.yml"]
+  push:
+    branches: [main]
+    paths: [".claude/skills/**", "tests/**", "scripts/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    strategy:
+      matrix:
+        python: ["3.9", "3.12"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: bash tests/selftest.sh
+      - name: Installer dry run
+        run: |
+          mkdir -p /tmp/target && git -C /tmp/target init -q
+          bash scripts/install.sh /tmp/target --dry-run

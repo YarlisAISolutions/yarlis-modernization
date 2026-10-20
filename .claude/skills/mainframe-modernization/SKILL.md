@@ -1,6 +1,7 @@
 ---
 name: mainframe-modernization
 description: Plan and specify the migration of a mainframe application (COBOL, CICS/BMS, JCL batch, VSAM, IMS, DB2) to React + Spring Boot (Java) + DB2. It maps every legacy artifact to a target component (transaction → route/page, BMS map → React form, CICS program → REST endpoint + service, JCL job → Spring Batch job, copybook/VSAM → DB2 table + JPA entity). It also covers pseudo-conversational state, COMMAREA, SYNCPOINT, COMP-3, EBCDIC, GDGs, checkpoint/restart, coexistence waves, data migration and functional-equivalence testing. Use this whenever the user talks about mainframe modernization, COBOL to Java, CICS to REST/React, JCL to Spring Batch, VSAM or IMS to DB2, a target architecture or migration plan for legacy code, or writing the SRD/technical design of a migration, even if they only say "migrate this mainframe app".
+license: Apache-2.0
 ---
 
 # Mainframe → React + Spring Boot + DB2

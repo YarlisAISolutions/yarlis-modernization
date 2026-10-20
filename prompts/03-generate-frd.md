@@ -8,7 +8,7 @@ Act as a senior business analyst and QA lead.
 See docs/requirements/PROJECT-CONTEXT.md.
 
 ## 3. Task
-Derive the Functional Requirements Document from docs/requirements/BRD.md (version [X.Y.Z]).
+Derive the Functional Requirements Document from docs/requirements/<module>/<feature>/BRD.md (version [X.Y.Z]).
 
 ## 4. Scope
 Same slice as the BRD, unless stated: [...]
@@ -17,7 +17,7 @@ Same slice as the BRD, unless stated: [...]
 BRD.md, the analysis knowledge base (screens.md, program cards, rules, findings), UX notes [LINKS or none].
 
 ## 6. Deliverables
-docs/requirements/FRD.md (standard 17-section structure), with derived_from pinned to the BRD version.
+docs/requirements/<module>/<feature>/FRD.md (standard 17-section structure), with derived_from pinned to the BRD version.
 
 ## 7. Rules
 - Every FR traces to at least one BR (and to the RUL it applies). Every FR has actor, preconditions, main flow,

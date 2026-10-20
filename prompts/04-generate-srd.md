@@ -17,7 +17,7 @@ Same slice as the FRD. Migration strategy constraints: [rewrite | convert | reho
 FRD.md, BRD.md, docs/analysis/ (inventory, data dictionary, CRUD matrix), target-mapping.md and data-mapping.md (mapgen).
 
 ## 6. Deliverables
-docs/requirements/SRD.md (standard 23-section structure) with ADRs for every significant choice.
+docs/requirements/<module>/<feature>/SRD.md (standard 23-section structure) with ADRs for every significant choice.
 
 ## 7. Rules
 - Use the mainframe-modernization skill for target patterns: CICS to REST + React, JCL to Spring Batch,

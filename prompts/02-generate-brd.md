@@ -19,7 +19,7 @@ Write the Business Requirements Document for [CAPABILITY / PRODUCT], version 0.1
 - Stakeholder notes / interviews / existing documents: [LINKS or none]
 
 ## 6. Deliverables
-docs/requirements/BRD.md (standard 21-section structure).
+docs/requirements/<module>/<feature>/BRD.md (standard 21-section structure), scaffolded with `docver.py new-feature --module <module> --feature <feature>`.
 
 ## 7. Rules
 - Business language only: no technology in requirement statements; code identifiers only inside evidence links.
