@@ -15,6 +15,8 @@ declared units, SQL table references.
 Usage:
   inventory.py scan  --src <dir> [--out docs/analysis] [--exclude GLOB ...]
   inventory.py slice --inventory docs/analysis/inventory.json --root PGM|TRANSID|JOB [--depth N]
+  inventory.py domains --inventory docs/analysis/inventory.json
+  inventory.py schema-diff --src <dir> --base <ref> [--head <ref>] [--requirements docs/requirements]
 
 Stdlib only. Python 3.9+.
 """
@@ -727,6 +729,13 @@ def analyze_ddl(text: str) -> dict:
     return {"tables": tables, "indexes": indexes}
 
 
+def analyze_schema(text: str, ftype: str) -> dict:
+    """Tables and indexes from DDL, or from a DCLGEN's EXEC SQL DECLARE ... TABLE."""
+    if ftype == "dclgen":
+        text = re.sub(r"EXEC\s+SQL\s+DECLARE\s+([A-Z0-9_.]+)\s+TABLE", r"CREATE TABLE \1", text, flags=re.I).replace("END-EXEC", ";")
+    return analyze_ddl(text)
+
+
 def analyze_ims(text: str, kind: str) -> dict:
     if kind == "ims-dbd":
         n = re.search(r"DBD\s+NAME=([A-Z0-9#@$]+)", text)
@@ -820,7 +829,7 @@ def scan(src: Path, excludes) -> dict:
                     a["path"] = rel
                     inv["copybooks"].setdefault(name, a)
                 elif ftype == "dclgen":
-                    a = analyze_ddl(re.sub(r"EXEC\s+SQL\s+DECLARE\s+([A-Z0-9_.]+)\s+TABLE", r"CREATE TABLE \1", text, flags=re.I).replace("END-EXEC", ";"))
+                    a = analyze_schema(text, "dclgen")
                     inv["copybooks"].setdefault(name, {"path": rel, "dclgen_tables": list(a["tables"])})
                     for t, d in a["tables"].items():
                         inv["tables"].setdefault(t, dict(d, path=rel, source="dclgen"))
@@ -1308,6 +1317,139 @@ def domains(inv: dict, hub_share: float) -> list:
     return out
 
 
+# --------------------------------------------------------------------------- schema-diff
+
+SCHEMA_TYPES = ("ddl", "dclgen", "sql")
+REQ_ID = re.compile(r"^#{2,4}\s+((?:BR|RUL|FR|SR|NFR|IFR|DR)-\d+)\b", re.M)
+
+
+def git(cwd: Path, *args, check=True) -> str:
+    import subprocess
+    r = subprocess.run(["git", "-C", str(cwd), *args], capture_output=True, text=True)
+    if check and r.returncode != 0:
+        sys.exit(f"git {' '.join(args)}: {r.stderr.strip()}")
+    return r.stdout
+
+
+def schema_at(top: Path, ref, rel: str):
+    """Tables/indexes in one file at a git ref (None = working tree); None when the file doesn't exist there."""
+    if ref is None:
+        p = top / rel
+        text = read_text(p) if p.is_file() else None
+    else:
+        text = git(top, "show", f"{ref}:{rel}", check=False) or None
+    if text is None:
+        return None
+    ftype = classify(Path(rel), text[:20000])
+    return analyze_schema(text, ftype) if ftype in SCHEMA_TYPES else None
+
+
+def compare_tables(before: dict, after: dict) -> list:
+    """One entry per changed table: kind (added/removed/changed) and the column, key and index changes."""
+    out = []
+    for name in sorted(set(before) | set(after)):
+        b, a = before.get(name), after.get(name)
+        if b is None or a is None:
+            cols = (a or b)["columns"]
+            out.append({"table": name, "kind": "added" if b is None else "removed",
+                        "changes": [f"{c['name']} {c['type']}" for c in cols]})
+            continue
+        bc, ac, changes = {c["name"]: c for c in b["columns"]}, {c["name"]: c for c in a["columns"]}, []
+        for c in ac:
+            if c not in bc:
+                changes.append(f"column added: {c} {ac[c]['type']}" + ("" if ac[c]["nullable"] else " NOT NULL"))
+            elif (bc[c]["type"], bc[c]["nullable"]) != (ac[c]["type"], ac[c]["nullable"]):
+                fmt = lambda x: x["type"] + ("" if x["nullable"] else " NOT NULL")
+                changes.append(f"column changed: {c} {fmt(bc[c])} → {fmt(ac[c])}")
+        changes += [f"column removed: {c} {bc[c]['type']}" for c in bc if c not in ac]
+        if b["primary_key"] != a["primary_key"]:
+            changes.append(f"primary key: {', '.join(b['primary_key']) or '—'} → {', '.join(a['primary_key']) or '—'}")
+        fk = lambda t: {(tuple(f["columns"]), f["references"]) for f in t["foreign_keys"]}
+        changes += [f"foreign key added: ({', '.join(c)}) → {r}" for c, r in sorted(fk(a) - fk(b))]
+        changes += [f"foreign key removed: ({', '.join(c)}) → {r}" for c, r in sorted(fk(b) - fk(a))]
+        if changes:
+            out.append({"table": name, "kind": "changed", "changes": changes})
+    return out
+
+
+def schema_diff(src: Path, base: str, head, inv, req_dir) -> dict:
+    top = Path(git(src, "rev-parse", "--show-toplevel").strip())
+    sub = os.path.relpath(src.resolve(), top.resolve()).replace(os.sep, "/")
+    sub = "" if sub == "." else sub
+    names = git(top, "diff", "--name-only", "--no-renames", base, *([head] if head else []), "--", sub or ".").split()
+    before, after, files, idx_b, idx_a = {}, {}, [], set(), set()
+    for rel in names:
+        sb, sa = schema_at(top, base, rel), schema_at(top, head, rel)
+        if sb is None and sa is None:
+            continue
+        files.append(rel[len(sub) + 1:] if sub else rel)
+        for s, tables, idx in ((sb, before, idx_b), (sa, after, idx_a)):
+            if s:
+                tables.update(s["tables"])
+                idx.update((i["name"], i["table"], i["columns"], i["unique"]) for i in s["indexes"])
+    tables = compare_tables(before, after)
+    indexes = [f"index added: {n} on {t} ({c})" + (" UNIQUE" if u else "") for n, t, c, u in sorted(idx_a - idx_b)]
+    indexes += [f"index removed: {n} on {t} ({c})" for n, t, c, u in sorted(idx_b - idx_a)]
+    touched = {t["table"] for t in tables} | {i.split(" on ")[1].split(" ")[0] for i in indexes}
+
+    programs = {}
+    if inv:
+        dcl = {c: set(d.get("dclgen_tables", [])) for c, d in inv["copybooks"].items()}
+        for pid, p in inv["programs"].items():
+            hits = sorted(t for t in p.get("sql_tables", {}) if t.split(".")[-1] in {x.split(".")[-1] for x in touched})
+            hits += sorted(f"{c} (DCLGEN)" for c in p.get("copies", []) if dcl.get(c, set()) & touched)
+            if hits:
+                programs[pid] = {"path": p.get("path", ""), "uses": hits, "crud": {t: p["sql_tables"][t] for t in p.get("sql_tables", {}) if t in hits}}
+
+    requirements = []
+    if req_dir and Path(req_dir).is_dir():
+        words = {t.split(".")[-1] for t in touched} | set(programs) | {Path(f).name for f in files} \
+            | {Path(p["path"]).name for p in programs.values() if p["path"]}
+        rx = re.compile(r"(?<![A-Za-z0-9_-])(" + "|".join(re.escape(w) for w in sorted(words, key=len, reverse=True)) + r")(?![A-Za-z0-9_-])") if words else None
+        for doc in sorted(Path(req_dir).rglob("*.md")):
+            if "history" in doc.parts or not rx:
+                continue
+            text = doc.read_text(encoding="utf-8", errors="replace")
+            heads = list(REQ_ID.finditer(text))
+            for i, m in enumerate(heads):
+                block = text[m.end():heads[i + 1].start() if i + 1 < len(heads) else len(text)]
+                block = block.split("\n## ", 1)[0]
+                hit = sorted(set(rx.findall(block)))
+                if hit:
+                    requirements.append({"doc": doc.as_posix(), "id": m.group(1), "via": hit})
+    return {"base": base, "head": head or "working tree", "files": files, "tables": tables, "indexes": indexes,
+            "programs": programs, "requirements": requirements}
+
+
+def schema_diff_md(d: dict) -> str:
+    md = [f"# Schema changes: {d['base']} → {d['head']}", "",
+          "Generated by `inventory.py schema-diff`. Use it as the input of a change request: bump the documents listed under",
+          "affected requirements, then update their data requirements (BRD §12, FRD §6, SRD §7 and §18).", "",
+          "## Files", ""] + [f"- {f}" for f in d["files"] or ["(no DDL or DCLGEN file changed)"]]
+    md += ["", "## Tables", ""]
+    if not d["tables"] and not d["indexes"]:
+        md.append("No table, column, key or index changes.")
+    for t in d["tables"]:
+        md.append(f"### {t['table']} ({t['kind']})")
+        md += [""] + [f"- {c}" for c in t["changes"]] + [""]
+    if d["indexes"]:
+        md += ["### Indexes", ""] + [f"- {i}" for i in d["indexes"]] + [""]
+    md += ["", "## Affected programs", ""]
+    if d["programs"]:
+        md += ["| Program | Source | Uses | CRUD |", "|---|---|---|---|"]
+        md += [f"| {p} | {v['path']} | {', '.join(v['uses'])} | {', '.join(f'{k}:{c}' for k, c in v['crud'].items()) or '—'} |"
+               for p, v in sorted(d["programs"].items())]
+    else:
+        md.append("None found (no inventory given, or no program uses these tables).")
+    md += ["", "## Affected requirements", ""]
+    if d["requirements"]:
+        md += ["| Document | ID | Matched on |", "|---|---|---|"]
+        md += [f"| {r['doc']} | {r['id']} | {', '.join(r['via'])} |" for r in d["requirements"]]
+    else:
+        md.append("None found in the requirements folder.")
+    return "\n".join(md) + "\n"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1325,7 +1467,28 @@ def main():
     dm = sub.add_parser("domains")
     dm.add_argument("--inventory", default="docs/analysis/inventory.json")
     dm.add_argument("--hub-share", type=float, default=0.25, help="ignore resources used by more than this share of programs")
+    sd = sub.add_parser("schema-diff", help="tables, columns, keys and indexes changed between two git refs, with affected programs and requirements")
+    sd.add_argument("--src", required=True, help="source tree inside a git repository")
+    sd.add_argument("--base", required=True, help="git ref before the change, e.g. origin/main or HEAD~1")
+    sd.add_argument("--head", help="git ref after the change (default: the working tree)")
+    sd.add_argument("--inventory", default="docs/analysis/inventory.json", help="for affected programs (skipped if missing)")
+    sd.add_argument("--requirements", default="docs/requirements", help="for affected requirement IDs (skipped if missing)")
+    sd.add_argument("--out", help="markdown report (default: <inventory dir>/schema-diff.md)")
+    sd.add_argument("--json", action="store_true", help="print the result as JSON")
     a = ap.parse_args()
+    if a.cmd == "schema-diff":
+        inv_path = Path(a.inventory)
+        inv = json.loads(inv_path.read_text()) if inv_path.is_file() else None
+        d = schema_diff(Path(a.src), a.base, a.head, inv, a.requirements)
+        out = Path(a.out) if a.out else inv_path.parent / "schema-diff.md"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(schema_diff_md(d))
+        if a.json:
+            print(json.dumps(d, indent=1))
+        else:
+            print(f"{len(d['tables'])} tables and {len(d['indexes'])} indexes changed; {len(d['programs'])} programs and "
+                  f"{len(d['requirements'])} requirements affected. Wrote {out}")
+        return
     if a.cmd == "domains":
         inv = json.loads(Path(a.inventory).read_text())
         groups = domains(inv, a.hub_share)

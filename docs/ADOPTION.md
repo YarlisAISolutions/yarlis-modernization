@@ -6,11 +6,14 @@ BRD/FRD/SRD documents and keep them honest.
 ## 1. Install once per repository
 
 ```bash
-git clone https://github.com/YarlisAISolutions/yarlis-modernization.git
-yarlis-modernization/scripts/install.sh /path/to/your-repo        # --dry-run to preview, --force to update
 cd /path/to/your-repo
-python3 .claude/skills/requirements-docs/scripts/docver.py init --type context --dir docs/requirements --project "<Name>" --src <legacy-source>
+npx @l2m/cli init --project "<Name>" --src <legacy-source>     # --dry-run to preview, --upgrade to refresh the skills
+npx @l2m/cli doctor                                            # Node 22+, Python 3.9+, git, which agent CLIs are installed
 ```
+
+Without Node: clone this repository and run `yarlis-modernization/scripts/install.sh /path/to/your-repo`, then
+`python3 .claude/skills/requirements-docs/scripts/docver.py init --type context --dir docs/requirements --project "<Name>" --src <legacy-source>`.
+Choose the agents your team uses with `--agents claude,copilot,codex,gemini` (default: all).
 
 What lands in your repo, and who uses it:
 
@@ -25,7 +28,10 @@ What lands in your repo, and who uses it:
 | `.github/workflows/copilot-setup-steps.yml` | Copilot cloud agent | Python and full git history, so the scripts and permalinks work |
 | `.github/ISSUE_TEMPLATE/feature-requirements.yml` | Everyone | Request a feature's documents; assign the issue to Copilot |
 | `.github/pull_request_template.md` | Reviewers | Requirements checklist |
-| `prompts/` | People | Human-readable prompt templates in the standard structure |
+| `prompts/` | People, `l2m generate` | Human-readable prompt templates in the standard structure |
+| `GEMINI.md` | Gemini CLI | The same rules as `AGENTS.md` |
+| `l2m.config.json` | `l2m` | Inputs (source, documents, schema), folders and the default agent |
+| `docs/inputs/` | Everyone | Existing documents, interview notes and specs the documents are written from |
 
 ## 2. Conventions everyone follows
 
@@ -52,10 +58,12 @@ flowchart LR
   review -->|changes| pr
 ```
 
-1. Open a **Feature requirements** issue, or run `/new-feature-requirements module=… feature=… scope=…` in Copilot Chat or Claude Code.
+1. Open a **Feature requirements** issue, run `/new-feature-requirements module=… feature=… scope=…` in Copilot Chat or Claude Code,
+   or run `l2m generate all --module … --feature … --scope "…" --agent <claude|copilot|codex|gemini>` from a terminal.
 2. The agent scaffolds with `docver.py new-feature`, fills the BRD, then the FRD, then the SRD, and validates.
 3. Open a PR on a `docs/<module>-<feature>` branch. CI checks it, and code owners review.
-4. Later changes use `/change-request`: bump first, carry the change downstream, and the PR shows the revision rows.
+4. Later changes use `/change-request` (or `l2m generate change-request --cr … --summary …`; add `--schema-diff <base>` when the
+   change comes from a DDL change): bump first, carry the change downstream, and the PR shows the revision rows.
 5. When code is being built, run `/assess-implementation` to get the RTM and gap report for the feature.
 
 ## 4. Ownership and review

@@ -23,6 +23,7 @@ recovered from code are only trusted when someone can check them.
 | `batch-flows.md` | script | One Mermaid flow per JCL job: steps, programs, datasets |
 | `programs/<PGM>.md` | script | Program card: callers, callees, data, screens, paragraphs + PERFORM tree, 88-levels, messages, line evidence |
 | `domains.md` | script (`domains`) | Candidate business domains (clusters of programs sharing data) |
+| `schema-diff.md` | script (`schema-diff`) | Tables, columns, keys and indexes changed between two git refs, the programs that use them and the requirement IDs that cite those programs: the input of a change request |
 | `system-overview.md` | you | Business-level narrative: what the system does, actors, capabilities, key flows (with diagrams) |
 | `rules/<domain>.md` | you | Business rule catalogue per domain (RUL candidates with evidence) |
 | `findings.md` | you | Legacy defects, anomalies and risks found while reading (F-nn, linked evidence). They feed BRD §7 pain points, §15 risks and deliberate changes in the FRD |
@@ -42,6 +43,10 @@ exports often have no or wrong extensions), handles fixed-format COBOL columns, 
 `XCTL/LINK/CALL` targets from `MOVE`/`VALUE` literals, finds DB2 batch programs behind
 `IKJEFT01 … RUN PROGRAM(x)`, and never stops on an odd file (errors are recorded per file).
 Read `inventory.md` first. It tells you the shape of the system in one page.
+
+When the change is a schema change (new or altered DDL/DCLGEN), run
+`python3 <skill-dir>/scripts/inventory.py schema-diff --src <source-root> --base <ref> [--head <ref>] --requirements docs/requirements`
+and use its report as the change request's input.
 
 ### 2. Close the gaps the scanner reports
 

@@ -17,7 +17,7 @@ license: Apache-2.0
 
 Templates in `assets/templates/` are the standard. Section numbers and titles are fixed, and `docver.py validate` checks them
 in order. A section that doesn't apply says `N/A: <reason>`. Never delete or renumber a section: that's what keeps every
-version and every project comparable. Tooling: `D=<skill-dir>/scripts/docver.py` (`<skill-dir>` = this skill's folder).
+version and every project comparable. Tooling: `D=<skill-dir>/scripts/docver.py` (`<skill-dir>` = this skill's folder; `l2m docs …` runs the same script when the `@l2m/cli` package is installed).
 Default folder: `docs/requirements/`, with `history/` for snapshots.
 
 ## Layout: one document set per feature

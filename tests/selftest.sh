@@ -77,4 +77,18 @@ python3 "$D" bump $F/BRD.md --summary "test change" --sections 10 > /dev/null &&
 python3 "$D" bumpcheck --base HEAD docs/requirements > /dev/null && ok "bump → bumpcheck passes; history: $(ls $F/history)"
 python3 "$D" validate $F/FRD.md | grep -q STALE && ok "FRD flagged STALE after BRD bump"
 python3 "$D" new-feature --module accounts --feature account-update --docs rtm,gap > /dev/null && python3 "$D" rtm sync $F | grep -q "2 rows" && ok "rtm sync"
+
+# --- schema-diff: a DDL change → changed columns, affected programs, affected requirement IDs
+git add -A && git -c user.email=t@t -c user.name=t commit -qm "before schema change"
+sed 's/CURR_BAL     DECIMAL(12,2) NOT NULL,/CURR_BAL     DECIMAL(13,2) NOT NULL,\
+    LAST_TXN_TS  TIMESTAMP,/' src/ddl/ACCOUNT.ddl > "$W/ddl.tmp" && mv "$W/ddl.tmp" src/ddl/ACCOUNT.ddl
+mkdir -p "$W/req-sd/a/b" && printf '## 10. X\n\n### BR-007: Post transactions\n- **Source:** cbl/ACCTPOST.cbl:3\n\n### BR-008: Other\n- nothing\n' > "$W/req-sd/a/b/BRD.md"
+python3 "$INV" schema-diff --src src --base HEAD --inventory "$W/analysis/inventory.json" --requirements "$W/req-sd" --out "$W/sd.md" > /dev/null
+grep -q 'column changed: CURR_BAL DECIMAL(12,2) NOT NULL → DECIMAL(13,2) NOT NULL' "$W/sd.md" && grep -q 'column added: LAST_TXN_TS TIMESTAMP' "$W/sd.md" && ok "schema-diff: column changes"
+grep -q '| ACCTPOST | cbl/ACCTPOST.cbl | ACCOUNT | ACCOUNT:U |' "$W/sd.md" && ok "schema-diff: affected program from the CRUD matrix"
+grep -q 'BRD.md | BR-007 | ACCTPOST' "$W/sd.md" && ! grep -q 'BR-008' "$W/sd.md" && ok "schema-diff: affected requirement IDs only"
+git add -A && git -c user.email=t@t -c user.name=t commit -qm "schema change"
+python3 "$INV" schema-diff --src src --base HEAD~1 --head HEAD --inventory "$W/analysis/inventory.json" --json | grep -q '"kind": "changed"' && ok "schema-diff between two refs"
+python3 "$INV" schema-diff --src src --base HEAD --inventory "$W/analysis/inventory.json" | grep -q '^0 tables' && ok "schema-diff: no change → empty report"
+
 echo "all self-tests passed"

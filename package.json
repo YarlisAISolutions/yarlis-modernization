@@ -1,0 +1,60 @@
+{
+  "name": "@l2m/cli",
+  "version": "0.1.0",
+  "description": "Legacy to modern: analyze legacy code (COBOL, CICS, JCL, DB2 and more) and generate versioned, traceable BRD, FRD, SRD and RTM documents with Claude Code, GitHub Copilot, Codex or Gemini.",
+  "license": "Apache-2.0",
+  "author": "Yarlis AI Solutions",
+  "homepage": "https://github.com/YarlisAISolutions/yarlis-modernization#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YarlisAISolutions/yarlis-modernization.git"
+  },
+  "bugs": "https://github.com/YarlisAISolutions/yarlis-modernization/issues",
+  "keywords": [
+    "legacy",
+    "modernization",
+    "mainframe",
+    "cobol",
+    "requirements",
+    "brd",
+    "frd",
+    "srd",
+    "traceability",
+    "claude-code",
+    "copilot",
+    "agent-skills"
+  ],
+  "type": "module",
+  "bin": {
+    "l2m": "bin/l2m.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "prompts",
+    "AGENTS.md",
+    "l2m.config.schema.json",
+    ".claude/skills",
+    "!**/__pycache__",
+    "!**/*.pyc",
+    ".github/copilot-instructions.md",
+    ".github/instructions",
+    ".github/prompts",
+    ".github/agents",
+    ".github/ISSUE_TEMPLATE",
+    ".github/pull_request_template.md",
+    ".github/workflows/requirements-check.yml",
+    ".github/workflows/copilot-setup-steps.yml"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "selftest": "bash tests/selftest.sh"
+  }
+}

@@ -9,7 +9,8 @@ Agent Skills live in `.claude/skills/`. GitHub Copilot, Copilot CLI, the Copilot
 - `requirements-docs`: BRD/FRD/SRD/RTM/gap reports per feature (`scripts/docver.py`).
 - `mainframe-modernization`: the legacy → React + Spring Boot + DB2 mapping (`scripts/mapgen.py`).
 
-Use them for all requirements and analysis work. The scripts need only Python 3.9+.
+Use them for all requirements and analysis work. The scripts need only Python 3.9+. The same scripts are available as
+`l2m analyze …`, `l2m map …` and `l2m docs …` when the `@l2m/cli` npm package is installed; both forms are equivalent.
 
 ## Requirements layout and rules
 
