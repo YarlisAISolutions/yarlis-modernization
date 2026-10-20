@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="160" viewBox="0 0 680 160" role="img" aria-labelledby="t d">
+  <title id="t">Yarlis Modernization</title>
+  <desc id="d">Logo: a mainframe cabinet turning into a checked requirements document</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B2A4A"/>
+      <stop offset="1" stop-color="#24406E"/>
+    </linearGradient>
+  </defs>
+  <!-- mark -->
+  <rect x="8" y="8" width="144" height="144" rx="32" fill="url(#bg)"/>
+  <!-- mainframe cabinet -->
+  <rect x="26" y="40" width="44" height="80" rx="6" fill="#FAF7F0" stroke="#0F1A30" stroke-width="3"/>
+  <rect x="32" y="48" width="32" height="22" rx="3" fill="#0F1A30"/>
+  <path d="M36 55h18M36 61h12" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="39" cy="84" r="6" fill="none" stroke="#1B2A4A" stroke-width="3"/>
+  <circle cx="57" cy="84" r="6" fill="none" stroke="#1B2A4A" stroke-width="3"/>
+  <path d="M33 102h30M33 110h30" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round"/>
+  <!-- arrow -->
+  <path d="M76 80h18" stroke="#F59E0B" stroke-width="5" stroke-linecap="round"/>
+  <path d="M90 72l9 8-9 8" fill="none" stroke="#F59E0B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- document -->
+  <path d="M104 40h26l12 12v68a6 6 0 0 1-6 6h-32a6 6 0 0 1-6-6V46a6 6 0 0 1 6-6z" fill="#FAF7F0" stroke="#0F1A30" stroke-width="3"/>
+  <path d="M130 40v12h12" fill="#D9F3EF" stroke="#0F1A30" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M106 62h22M106 72h28M106 82h18" stroke="#14B8A6" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="126" cy="106" r="11" fill="#14B8A6"/>
+  <path d="M120 106l4 4 8-8" fill="none" stroke="#FAF7F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- wordmark -->
+  <text x="176" y="78" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#1B2A4A">Yarlis <tspan fill="#14B8A6">Modernization</tspan></text>
+  <text x="178" y="116" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="19" font-weight="500" fill="#5B6B86">legacy code → traceable requirements → modern stack</text>
+</svg>

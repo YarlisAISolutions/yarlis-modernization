@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460" role="img" aria-labelledby="t d">
+  <title id="t">From mainframe to modern, with the requirements in between</title>
+  <desc id="d">Cartoon: a friendly old mainframe hands a scroll of business rules to a small robot analyst, who turns it into versioned BRD, FRD and SRD documents and passes them over a bridge to a laptop running React, Spring Boot and DB2.</desc>
+  <defs>
+    <style>
+      .ol{stroke:#0F1A30;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
+      .txt{font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+    </style>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FAF7F0"/><stop offset="1" stop-color="#EEF6F4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="460" fill="url(#sky)"/>
+  <!-- ground & bridge -->
+  <rect y="392" width="1200" height="68" fill="#DCEBE7"/>
+  <path d="M300 392 Q600 250 900 392" fill="none" stroke="#F59E0B" stroke-width="14" stroke-linecap="round"/>
+  <path d="M360 372v20M430 340v52M500 318v74M570 306v86M640 306v86M710 318v74M780 340v52M850 372v20" stroke="#F59E0B" stroke-width="5"/>
+  <path d="M300 392 Q600 270 900 392" fill="none" stroke="#FCD9A0" stroke-width="4"/>
+
+  <!-- ===== Mainframe character (left) ===== -->
+  <g transform="translate(70 120)">
+    <rect x="0" y="0" width="210" height="272" rx="14" fill="#C9D3E3" class="ol"/>
+    <rect x="18" y="18" width="174" height="100" rx="10" fill="#0F1A30" class="ol"/>
+    <!-- face on green screen -->
+    <circle cx="70" cy="58" r="9" fill="#22C55E"/>
+    <circle cx="140" cy="58" r="9" fill="#22C55E"/>
+    <path d="M78 86 Q105 104 132 86" fill="none" stroke="#22C55E" stroke-width="6" stroke-linecap="round"/>
+    <path d="M55 40h30M125 40h30" stroke="#22C55E" stroke-width="4" stroke-linecap="round"/>
+    <!-- tape reels -->
+    <circle cx="62" cy="160" r="28" fill="#FAF7F0" class="ol"/><circle cx="62" cy="160" r="8" fill="#1B2A4A"/>
+    <circle cx="148" cy="160" r="28" fill="#FAF7F0" class="ol"/><circle cx="148" cy="160" r="8" fill="#1B2A4A"/>
+    <path d="M62 132 L62 188 M34 160 L90 160" stroke="#9AA7BD" stroke-width="3"/>
+    <path d="M148 132 L148 188 M120 160 L176 160" stroke="#9AA7BD" stroke-width="3"/>
+    <!-- blinking lights + punch card slot -->
+    <circle cx="36" cy="214" r="6" fill="#F87171"/><circle cx="56" cy="214" r="6" fill="#F59E0B"/><circle cx="76" cy="214" r="6" fill="#22C55E"/>
+    <rect x="104" y="206" width="84" height="16" rx="4" fill="#1B2A4A"/>
+    <rect x="18" y="236" width="174" height="20" rx="5" fill="#AEBBD0"/>
+    <!-- arm holding scroll -->
+    <path d="M210 150 Q250 150 262 176" fill="none" class="ol" stroke-width="10"/>
+    <g transform="translate(250 160) rotate(-12)">
+      <rect x="0" y="0" width="70" height="44" rx="8" fill="#FFF3D6" class="ol"/>
+      <path d="M12 14h44M12 24h36M12 34h40" stroke="#C2410C" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </g>
+  <!-- speech bubble mainframe -->
+  <g transform="translate(40 26)">
+    <path d="M0 14a14 14 0 0 1 14-14h252a14 14 0 0 1 14 14v40a14 14 0 0 1-14 14H120l-26 22 4-22H14A14 14 0 0 1 0 54z" fill="#FFFFFF" class="ol" stroke-width="3"/>
+    <text x="140" y="31" text-anchor="middle" class="txt" font-size="17" font-weight="700" fill="#1B2A4A">40 years of business rules</text>
+    <text x="140" y="53" text-anchor="middle" class="txt" font-size="17" font-weight="700" fill="#1B2A4A">live in here. Careful!</text>
+  </g>
+
+  <!-- ===== Robot analyst (middle, on the bridge) ===== -->
+  <g transform="translate(520 150)">
+    <path d="M80 -6v-18" class="ol"/><circle cx="80" cy="-28" r="8" fill="#F59E0B" class="ol" stroke-width="3"/>
+    <rect x="30" y="-6" width="100" height="78" rx="22" fill="#14B8A6" class="ol"/>
+    <rect x="44" y="10" width="72" height="40" rx="14" fill="#FAF7F0" class="ol" stroke-width="3"/>
+    <circle cx="66" cy="30" r="7" fill="#0F1A30"/><circle cx="96" cy="30" r="7" fill="#0F1A30"/>
+    <circle cx="68" cy="27" r="2" fill="#FFFFFF"/><circle cx="98" cy="27" r="2" fill="#FFFFFF"/>
+    <path d="M70 58 Q81 66 92 58" fill="none" stroke="#0F1A30" stroke-width="4" stroke-linecap="round"/>
+    <rect x="40" y="76" width="80" height="70" rx="16" fill="#1B2A4A" class="ol"/>
+    <circle cx="80" cy="106" r="10" fill="#14B8A6"/>
+    <path d="M58 146v30M102 146v30" class="ol" stroke-width="10"/>
+    <!-- magnifying glass arm -->
+    <path d="M40 96 Q8 92 0 64" fill="none" class="ol" stroke-width="9"/>
+    <circle cx="-6" cy="48" r="20" fill="#E6FFFA" fill-opacity="0.7" class="ol"/>
+    <!-- documents arm -->
+    <path d="M120 96 Q150 100 160 80" fill="none" class="ol" stroke-width="9"/>
+    <g transform="translate(148 6)">
+      <rect x="16" y="0" width="74" height="92" rx="7" fill="#FAF7F0" class="ol" stroke-width="3"/>
+      <rect x="8" y="8" width="74" height="92" rx="7" fill="#FAF7F0" class="ol" stroke-width="3"/>
+      <rect x="0" y="16" width="74" height="92" rx="7" fill="#FFFFFF" class="ol" stroke-width="3"/>
+      <text x="37" y="44" text-anchor="middle" class="txt" font-size="16" font-weight="800" fill="#1B2A4A">BRD</text>
+      <text x="37" y="64" text-anchor="middle" class="txt" font-size="13" font-weight="700" fill="#14B8A6">FRD · SRD</text>
+      <circle cx="54" cy="90" r="13" fill="#F59E0B" class="ol" stroke-width="2"/>
+      <text x="54" y="94" text-anchor="middle" class="txt" font-size="10" font-weight="800" fill="#0F1A30">v0.2</text>
+    </g>
+  </g>
+  <!-- speech bubble robot -->
+  <g transform="translate(470 22)">
+    <path d="M0 14a14 14 0 0 1 14-14h272a14 14 0 0 1 14 14v40a14 14 0 0 1-14 14H160l-6 22-20-22H14A14 14 0 0 1 0 54z" fill="#FFFFFF" class="ol" stroke-width="3"/>
+    <text x="150" y="31" text-anchor="middle" class="txt" font-size="17" font-weight="700" fill="#1B2A4A">Every rule written down, versioned,</text>
+    <text x="150" y="53" text-anchor="middle" class="txt" font-size="17" font-weight="700" fill="#1B2A4A">and linked to the exact line.</text>
+  </g>
+
+  <!-- ===== Laptop (right) ===== -->
+  <g transform="translate(900 210)">
+    <rect x="20" y="0" width="240" height="150" rx="12" fill="#1B2A4A" class="ol"/>
+    <rect x="34" y="14" width="212" height="122" rx="6" fill="#FAF7F0"/>
+    <!-- atom (front end) -->
+    <g transform="translate(84 62)" fill="none" stroke="#14B8A6" stroke-width="4">
+      <ellipse rx="30" ry="11"/><ellipse rx="30" ry="11" transform="rotate(60)"/><ellipse rx="30" ry="11" transform="rotate(-60)"/>
+      <circle r="5" fill="#14B8A6"/>
+    </g>
+    <!-- leaf (services) -->
+    <path d="M150 88 C150 52 176 38 202 38 C202 70 186 90 150 88 Z" fill="#22C55E" class="ol" stroke-width="3"/>
+    <path d="M154 84 L192 46" stroke="#0F1A30" stroke-width="3"/>
+    <!-- database -->
+    <g transform="translate(206 92)">
+      <path d="M-18 0v26c0 6 36 6 36 0V0" fill="#F59E0B" class="ol" stroke-width="3"/>
+      <ellipse cx="0" cy="0" rx="18" ry="6" fill="#FCD9A0" class="ol" stroke-width="3"/>
+    </g>
+    <path d="M0 150h280l-18 20H18z" fill="#C9D3E3" class="ol"/>
+    <!-- happy face sticker -->
+    <circle cx="70" cy="114" r="12" fill="#F59E0B"/>
+    <path d="M64 115 Q70 121 76 115" fill="none" stroke="#0F1A30" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <text x="1040" y="410" text-anchor="middle" class="txt" font-size="18" font-weight="700" fill="#1B2A4A">React · Spring Boot · DB2</text>
+  <text x="175" y="430" text-anchor="middle" class="txt" font-size="18" font-weight="700" fill="#1B2A4A">COBOL · CICS · JCL · DB2</text>
+</svg>
