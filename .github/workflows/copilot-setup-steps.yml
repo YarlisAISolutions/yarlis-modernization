@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22          # optional: lets the agent run `npx @l2m/cli` as well as the scripts
+          node-version: '24.22.1'          # optional: lets the agent run `npx @l2m/cli` as well as the scripts
       - name: Smoke-test the skill scripts
         run: |
           python3 .claude/skills/requirements-docs/scripts/docver.py --help > /dev/null
