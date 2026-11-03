@@ -101,7 +101,7 @@ Flags override it per run.
 }
 ```
 
-- **Source code** (`source`, `--src`): the first entry is scanned by `inventory.py` (COBOL, CICS, BMS, JCL, DDL/DCLGEN, IMS and generic languages); further entries are only listed in the prompt. `generate` rescans when a file is newer than `inventory.json`. A git source pins every evidence link to its commit.
+- **Source code** (`source`, `--src`): every entry is scanned by `inventory.py` (COBOL, CICS, BMS, JCL, DDL/DCLGEN, IMS and generic languages). One tree is analysed into `docs/analysis/`; several get a folder each, named after the entry (`legacy/cobol` → `docs/analysis/legacy-cobol/`), and each is scanned on its own, so a call from one tree into another shows as unresolved. `generate` rescans a tree when one of its files is newer than its `inventory.json`. A git source pins every evidence link to its commit.
 - **Existing documents and notes** (`docs`, `--docs`): drop interview notes, old specs, PDFs and exports in `docs/inputs/`, or list files, folders and URLs. `l2m` writes `docs/analysis/inputs.md` with each input's path or link, kind, size and sha256, and every prompt points the agent at it. Content is never pasted into prompts: the agent reads the files and cites them as links.
 - **Schema changes** (`schema`, `--schema`, `--schema-diff`): DDL and DCLGEN are parsed into the data dictionary. For a change, run
   ```bash
