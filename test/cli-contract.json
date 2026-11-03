@@ -1,0 +1,204 @@
+{
+  "$comment": "The l2m 1.0 contract. test/contract.test.js holds the CLI to it; docs/cli.md explains it. A stable item may not be removed, renamed or change type before 2.0. A new command, step, flag or config key must be added here (stable or experimental) and to docs/cli.md.",
+  "commands": {
+    "init": "stable",
+    "doctor": "stable",
+    "analyze": "stable",
+    "map": "stable",
+    "docs": "stable",
+    "generate": "stable",
+    "prompt": "stable",
+    "help": "stable",
+    "version": "stable"
+  },
+  "aliases": {
+    "-h": "help",
+    "--help": "help",
+    "-v": "version",
+    "--version": "version"
+  },
+  "steps": {
+    "analysis": "stable",
+    "brd": "stable",
+    "frd": "stable",
+    "srd": "stable",
+    "all": "stable",
+    "change-request": "experimental",
+    "assess": "experimental"
+  },
+  "flags": {
+    "init": {
+      "--agents": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--project": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--src": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--owner": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--target-stack": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--force": {
+        "type": "boolean",
+        "status": "stable"
+      },
+      "--upgrade": {
+        "type": "boolean",
+        "status": "stable"
+      },
+      "--dry-run": {
+        "type": "boolean",
+        "status": "stable"
+      }
+    },
+    "generate": {
+      "--module": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--feature": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--component": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--title": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--scope": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--out-of-scope": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--src": {
+        "type": "string",
+        "status": "stable",
+        "multiple": true
+      },
+      "--docs": {
+        "type": "string",
+        "status": "stable",
+        "multiple": true
+      },
+      "--schema": {
+        "type": "string",
+        "status": "stable",
+        "multiple": true
+      },
+      "--agent": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--agent-cmd": {
+        "type": "string",
+        "status": "stable"
+      },
+      "--yolo": {
+        "type": "boolean",
+        "status": "stable"
+      },
+      "--print": {
+        "type": "boolean",
+        "status": "stable"
+      },
+      "--force": {
+        "type": "boolean",
+        "status": "stable"
+      },
+      "--no-init": {
+        "type": "boolean",
+        "status": "stable"
+      },
+      "--cr": {
+        "type": "string",
+        "status": "experimental"
+      },
+      "--summary": {
+        "type": "string",
+        "status": "experimental"
+      },
+      "--schema-diff": {
+        "type": "string",
+        "status": "experimental"
+      },
+      "--affects": {
+        "type": "string",
+        "status": "experimental"
+      },
+      "--requested-by": {
+        "type": "string",
+        "status": "experimental"
+      },
+      "--reason": {
+        "type": "string",
+        "status": "experimental"
+      },
+      "--refs": {
+        "type": "string",
+        "status": "experimental"
+      },
+      "--author": {
+        "type": "string",
+        "status": "experimental"
+      }
+    }
+  },
+  "scriptCommands": {
+    "analyze": {
+      "scan": "stable",
+      "slice": "stable",
+      "domains": "stable",
+      "schema-diff": "stable"
+    },
+    "docs": {
+      "init": "stable",
+      "new-feature": "stable",
+      "bump": "stable",
+      "validate": "stable",
+      "linkify": "stable",
+      "trace": "stable",
+      "rtm": "stable",
+      "status": "stable",
+      "diff": "stable",
+      "index": "stable",
+      "check": "stable",
+      "bumpcheck": "stable"
+    }
+  },
+  "exitCodes": {
+    "0": "success",
+    "1": "a check failed: doctor found a problem, or generate's validation or version check failed",
+    "2": "usage error: unknown command, step or flag, or a missing or bad value",
+    "127": "Python 3.9+ not found (analyze, map, docs, generate)"
+  },
+  "config": {
+    "$schema": "stable",
+    "project": "stable",
+    "owner": "stable",
+    "source": "stable",
+    "docs": "stable",
+    "schema": "stable",
+    "targetStack": "stable",
+    "migrationStrategy": "stable",
+    "analysisDir": "stable",
+    "requirementsDir": "stable",
+    "agent": "stable",
+    "agents": "stable"
+  }
+}

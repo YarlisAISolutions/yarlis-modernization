@@ -85,6 +85,8 @@ l2m doctor                                                    # Node, Python, gi
 | `l2m generate <step>` | `analysis`, `brd`, `frd`, `srd`, `all`, `change-request` or `assess`: rescans the source if it changed, writes the inputs manifest, scaffolds the feature folder, fills the step's prompt from `prompts/`, runs the agent, then runs `linkify`, `trace --inject`, `validate` and `index` itself. A validation error fails the run. |
 | `l2m prompt <step>` | Prints the same filled prompt, for pasting into any chat agent. |
 
+Every command, flag, config key and exit code, and which of them are stable for 1.0: [docs/cli.md](docs/cli.md).
+
 ### Inputs: source code, documents and schema changes
 
 `l2m.config.json` (created by `init`, schema in [`l2m.config.schema.json`](l2m.config.schema.json)) lists what the documents are written from.
@@ -229,8 +231,9 @@ prompts/                    standard prompt structure + per-step templates + mas
 scripts/install.sh          installs the kit into another repository (runs `l2m init` when Node 22+ is present)
 scripts/check-pack.sh       checks what `npm publish` would ship
 tests/                      synthetic mainframe fixture + selftest.sh (run in CI)
-test/                       CLI tests (node --test)
+test/                       CLI tests (node --test), the 1.0 contract (cli-contract.json) and its snapshots
 docs/ADOPTION.md            team conventions and workflow
+docs/cli.md                 CLI reference: commands, flags, config keys, exit codes, stable or experimental
 docs/images/                logo and cartoons (SVG)
 ```
 
