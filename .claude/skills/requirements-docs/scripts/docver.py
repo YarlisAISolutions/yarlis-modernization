@@ -12,7 +12,7 @@ Document types (templates in ../assets/templates are the single source of truth 
 Commands
   init      Create a document from its template at version 0.1.0.
   bump      Snapshot the current version to history/, raise the version, add a revision row.
-            Run it BEFORE editing an existing document.
+            Run it BEFORE editing an existing document. --dry-run prints the next version only.
   validate  Front matter, section order, IDs, traces, diagrams, evidence links, RTM statuses, staleness.
   linkify   Turn `path:line` evidence into hyperlinks to the source (repo permalink or relative link).
   trace     BR -> FR -> SR matrix (optionally injected into each document).
@@ -507,10 +507,13 @@ def cmd_bump(a):
     M, m, p = parse_ver(old)
     new = {"major": f"{M + 1}.0.0", "minor": f"{M}.{m + 1}.0", "patch": f"{M}.{m}.{p + 1}"}[a.level]
     hist = d.path.parent / "history"
-    hist.mkdir(exist_ok=True)
     snap = hist / f"{d.path.stem}_v{old}.md"
     if snap.exists() and not a.force:
         sys.exit(f"snapshot {snap} already exists: v{old} was already bumped once. Edit the content, or pass --force.")
+    if a.dry_run:
+        print(f"{d.path.name}: {old} -> {new} (dry run: nothing written)")
+        return
+    hist.mkdir(exist_ok=True)
     shutil.copy2(d.path, snap)
     text = set_fm(d.text, "version", new)
     text = set_fm(text, "last_updated", date.today().isoformat())
@@ -1156,6 +1159,7 @@ def main():
     b.add_argument("--status", choices=["Draft", "In Review", "Approved", "Baselined", "Superseded"])
     b.add_argument("--refresh-upstream", action="store_true")
     b.add_argument("--force", action="store_true")
+    b.add_argument("--dry-run", action="store_true", help="print the old and new version, write nothing")
     v = sub.add_parser("validate")
     v.add_argument("paths", nargs="+")
     v.add_argument("--strict", action="store_true")
