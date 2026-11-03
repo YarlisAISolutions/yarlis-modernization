@@ -25,6 +25,10 @@ npm package `@l2m/cli`. Each skill is a `SKILL.md`, a stdlib-only Python script,
   `bash scripts/check-install-parity.sh` (run in CI) fails when they install different files.
 - npm leaves dotfolders out by default: `files` in `package.json` lists `.claude/skills` and the `.github` kit explicitly.
   `bash scripts/check-pack.sh` checks the package contents.
+- The 1.0 contract (commands, steps, flags, config keys, exit codes; stable or experimental) is `test/cli-contract.json`, explained in
+  `docs/cli.md`. `test/contract.test.js` fails when a stable item disappears or a new one isn't classified, and snapshots `l2m --help`
+  and the config schema in `test/snapshots/`. After a deliberate change: update both files, `L2M_UPDATE_SNAPSHOTS=1 npm test`, and
+  add a line under "Contract changes" in `docs/cli.md`.
 - Run `npm test` (CLI) and `bash tests/selftest.sh` (scripts) after any change.
 - Release: bump `version` in `package.json` and `.claude-plugin/marketplace.json` together (a test checks this). Merging to `main`
   publishes through `.github/workflows/release.yml` (NPM_TOKEN from Yarlis Keep, later trusted publishing).

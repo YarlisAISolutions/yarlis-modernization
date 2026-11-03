@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 files="$(npm pack --dry-run --json --ignore-scripts | node -e 'for (const f of JSON.parse(require("fs").readFileSync(0))[0].files) console.log(f.path)')"
 fail=0
-for need in bin/l2m.js lib/generate.js lib/python.js prompts/02-generate-brd.md AGENTS.md LICENSE README.md \
+for need in bin/l2m.js lib/cli.js lib/generate.js lib/python.js prompts/02-generate-brd.md AGENTS.md LICENSE README.md \
   .claude/skills/legacy-code-analysis/SKILL.md .claude/skills/legacy-code-analysis/scripts/inventory.py \
   .claude/skills/requirements-docs/SKILL.md .claude/skills/requirements-docs/scripts/docver.py \
   .claude/skills/requirements-docs/assets/templates/brd.md .claude/skills/mainframe-modernization/scripts/mapgen.py \
