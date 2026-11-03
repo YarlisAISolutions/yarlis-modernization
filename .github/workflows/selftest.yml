@@ -36,3 +36,5 @@ jobs:
           mkdir -p /tmp/target && git -C /tmp/target init -q
           bash scripts/install.sh /tmp/target --dry-run
           L2M_BASH=1 bash scripts/install.sh /tmp/target --dry-run
+      - name: Both install paths install the same files
+        run: bash scripts/check-install-parity.sh
