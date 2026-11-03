@@ -8,7 +8,7 @@
     "$schema": { "type": "string" },
     "project": { "type": "string", "description": "Product or project name used in prompts and new documents." },
     "owner": { "type": "string", "description": "Business owner, or Unknown." },
-    "source": { "$ref": "#/$defs/paths", "description": "Legacy source tree(s). The first one is scanned by inventory.py; --src overrides." },
+    "source": { "$ref": "#/$defs/paths", "description": "Legacy source tree(s), each scanned by inventory.py (several trees get one analysis folder each); --src overrides." },
     "docs": { "$ref": "#/$defs/paths", "description": "Existing documents, interview notes, specs and wiki links (files, folders or URLs); --docs adds more." },
     "schema": { "$ref": "#/$defs/paths", "description": "DDL, DCLGEN and migration files or folders; --schema adds more." },
     "targetStack": { "type": "string", "description": "e.g. React 19 + Spring Boot 3 (Java 21) + DB2 for z/OS 13, or Unknown." },

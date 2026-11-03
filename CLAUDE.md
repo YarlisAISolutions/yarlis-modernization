@@ -21,7 +21,8 @@ npm package `@l2m/cli`. Each skill is a `SKILL.md`, a stdlib-only Python script,
 - `generate` keeps the Role, Deliverables, Rules and Verification blocks of `prompts/0N-*.md` word for word and fills the rest
   (`lib/prompts.js`). Changing a prompt's `## N.` headings or adding a `[PLACEHOLDER]` there needs a matching change in `lib/prompts.js`.
 - Agent command templates live in `lib/agents.js`. Check a flag against the agent's `--help` before changing it.
-- `lib/install.js` is the installer; `scripts/install.sh` calls it when Node 22+ is present and keeps a bash fallback. Change both.
+- `lib/install.js` is the installer; `scripts/install.sh` calls it when Node 22+ is present and keeps a bash fallback. Change both:
+  `bash scripts/check-install-parity.sh` (run in CI) fails when they install different files.
 - npm leaves dotfolders out by default: `files` in `package.json` lists `.claude/skills` and the `.github` kit explicitly.
   `bash scripts/check-pack.sh` checks the package contents.
 - Run `npm test` (CLI) and `bash tests/selftest.sh` (scripts) after any change.

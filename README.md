@@ -101,7 +101,7 @@ Flags override it per run.
 }
 ```
 
-- **Source code** (`source`, `--src`): the first entry is scanned by `inventory.py` (COBOL, CICS, BMS, JCL, DDL/DCLGEN, IMS and generic languages); further entries are only listed in the prompt. `generate` rescans when a file is newer than `inventory.json`. A git source pins every evidence link to its commit.
+- **Source code** (`source`, `--src`): every entry is scanned by `inventory.py` (COBOL, CICS, BMS, JCL, DDL/DCLGEN, IMS and generic languages). One tree is analysed into `docs/analysis/`; several get a folder each, named after the entry (`legacy/cobol` → `docs/analysis/legacy-cobol/`), and each is scanned on its own, so a call from one tree into another shows as unresolved. `generate` rescans a tree when one of its files is newer than its `inventory.json`. A git source pins every evidence link to its commit.
 - **Existing documents and notes** (`docs`, `--docs`): drop interview notes, old specs, PDFs and exports in `docs/inputs/`, or list files, folders and URLs. `l2m` writes `docs/analysis/inputs.md` with each input's path or link, kind, size and sha256, and every prompt points the agent at it. Content is never pasted into prompts: the agent reads the files and cites them as links.
 - **Schema changes** (`schema`, `--schema`, `--schema-diff`): DDL and DCLGEN are parsed into the data dictionary. For a change, run
   ```bash
@@ -115,9 +115,9 @@ Flags override it per run.
 | `--agent` | Runs | Reads the skills from |
 |---|---|---|
 | `claude` | `claude -p --permission-mode acceptEdits` with edit tools and `python3`/`git` allowed | `.claude/skills/` |
-| `copilot` | `copilot -p` with write and `python3`/`git` shell tools allowed (flags not yet verified against a live install) | `.claude/skills/`, `.github/copilot-instructions.md`, `AGENTS.md` |
+| `copilot` | `copilot -p` with `write` and `shell(python3:*)`/`shell(git:*)` allowed (flags checked against the CLI reference, not yet run live) | `.claude/skills/`, `.github/copilot-instructions.md`, `AGENTS.md` |
 | `codex` | `codex exec --sandbox workspace-write` | `AGENTS.md` (+ the skills it points to) |
-| `gemini` | `gemini -p --approval-mode auto_edit` with `python3`/`git` allowed (flags not yet verified against a live install) | `GEMINI.md` |
+| `gemini` | `gemini -p --approval-mode auto_edit` with `python3`/`git` allowed; trusts the working folder for the run (`GEMINI_CLI_TRUST_WORKSPACE=true`), since headless Gemini stops in an untrusted folder (flags checked against the CLI source, not yet run live) | `GEMINI.md` |
 | any other | `--agent-cmd "my-agent --flag {prompt}"`, or `agents` in `l2m.config.json` | `AGENTS.md` |
 
 The default permissions only let the agent edit files and run `python3` and `git`. `--yolo` switches to the agent's
