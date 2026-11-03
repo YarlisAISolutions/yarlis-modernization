@@ -4,14 +4,16 @@
 #
 #   scripts/install.sh <target-repo> [--force] [--dry-run]
 #
-# With Node 22+ on the PATH this runs `l2m init` (bin/l2m.js), which also writes l2m.config.json, docs/inputs/
-# and PROJECT-CONTEXT.md; set L2M_BASH=1 to use the bash installer below instead. The npm package does the same:
+# With Node 22+ on the PATH this runs `l2m init` (bin/l2m.js), which also writes l2m.config.json and
+# PROJECT-CONTEXT.md; set L2M_BASH=1 to use the bash installer below instead. The npm package does the same:
 # `npx @l2m/cli init <target-repo>`.
 #
 # Copies: .claude/skills/{legacy-code-analysis,requirements-docs,mainframe-modernization}, the Copilot files
 # (.github/copilot-instructions.md, instructions/, prompts/, agents/), the CI workflow, PR template, issue form,
-# AGENTS.md, prompts/, and creates docs/requirements/. Existing files are never overwritten without --force;
-# for copilot-instructions.md and AGENTS.md an existing file gets a marked section appended instead.
+# AGENTS.md, GEMINI.md, prompts/, and creates docs/requirements/ and docs/inputs/. Existing files are never overwritten
+# without --force; for copilot-instructions.md, AGENTS.md and GEMINI.md an existing file gets a marked section appended
+# instead. It installs the same files as `l2m init`, except l2m.config.json and PROJECT-CONTEXT.md
+# (scripts/check-install-parity.sh checks this).
 set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")/.." && pwd)"
@@ -41,28 +43,29 @@ copy() {  # copy <relative path> [destination relative path]
   echo "add      $dst"
 }
 
-append_section() {  # append_section <relative path>: add our content once, between markers
-  local rel="$1" begin="<!-- yarlis-modernization:begin -->" end="<!-- yarlis-modernization:end -->"
-  if [ ! -e "$TARGET/$rel" ]; then  # with the markers, so a second run doesn't append it again
-    if [ $DRY = 1 ]; then echo "would: write $rel"; return; fi
-    mkdir -p "$(dirname "$TARGET/$rel")"
-    { printf '%s\n' "$begin"; cat "$SRC/$rel"; printf '%s\n' "$end"; } > "$TARGET/$rel"
-    echo "add      $rel"; return
+append_section() {  # append_section <relative path> [destination relative path]: add our content once, between markers
+  local rel="$1" dst="${2:-$1}" begin="<!-- yarlis-modernization:begin -->" end="<!-- yarlis-modernization:end -->"
+  if [ ! -e "$TARGET/$dst" ]; then  # with the markers, so a second run doesn't append it again
+    if [ $DRY = 1 ]; then echo "would: write $dst"; return; fi
+    mkdir -p "$(dirname "$TARGET/$dst")"
+    { printf '%s\n' "$begin"; cat "$SRC/$rel"; printf '%s\n' "$end"; } > "$TARGET/$dst"
+    echo "add      $dst"; return
   fi
-  if grep -qF "$begin" "$TARGET/$rel"; then echo "keep     $rel (section already present)"; return; fi
-  if [ $DRY = 1 ]; then echo "would: append section to $rel"; return; fi
-  { printf '\n%s\n' "$begin"; cat "$SRC/$rel"; printf '%s\n' "$end"; } >> "$TARGET/$rel"
-  echo "append   $rel"
+  if grep -qF "$begin" "$TARGET/$dst"; then echo "keep     $dst (section already present)"; return; fi
+  if [ $DRY = 1 ]; then echo "would: append section to $dst"; return; fi
+  { printf '\n%s\n' "$begin"; cat "$SRC/$rel"; printf '%s\n' "$end"; } >> "$TARGET/$dst"
+  echo "append   $dst"
 }
 
 for s in legacy-code-analysis requirements-docs mainframe-modernization; do
   if [ -e "$TARGET/.claude/skills/$s" ] && [ $FORCE = 1 ]; then run rm -rf "$TARGET/.claude/skills/$s"; fi
   copy ".claude/skills/$s"
-  run rm -rf "$TARGET/.claude/skills/$s/scripts/__pycache__"
+  if [ $DRY = 0 ]; then find "$TARGET/.claude/skills/$s" \( -name __pycache__ -o -name '*.pyc' \) -prune -exec rm -rf {} +; fi
 done
 
 append_section ".github/copilot-instructions.md"
 append_section "AGENTS.md"
+append_section "AGENTS.md" "GEMINI.md"
 for f in instructions/requirements-docs.instructions.md instructions/legacy-analysis.instructions.md \
          prompts/new-feature-requirements.prompt.md prompts/analyze-legacy.prompt.md \
          prompts/change-request.prompt.md prompts/assess-implementation.prompt.md \
@@ -77,7 +80,9 @@ else
   copy ".github/workflows/copilot-setup-steps.yml"
 fi
 copy "prompts"
-run mkdir -p "$TARGET/docs/requirements"
+run mkdir -p "$TARGET/docs/requirements" "$TARGET/docs/inputs"
+VERSION="$(sed -n 's/^  "version": "\(.*\)",$/\1/p' "$SRC/package.json")"
+if [ $DRY = 1 ]; then echo "would: write .claude/skills/.l2m-version"; else printf '%s\n' "$VERSION" > "$TARGET/.claude/skills/.l2m-version"; fi
 
 cat <<EOF
 
