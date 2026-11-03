@@ -91,8 +91,9 @@ describe('l2m 1.0 contract', () => {
   test('l2m --help matches the snapshot', () => {
     const r = l2m(W, ['--help']);
     assert.equal(r.status, 0);
-    // The version is left out, so a release does not change the snapshot.
-    snapshot('help.txt', r.stdout.replaceAll(VERSION, '<version>'));
+    // Only the header's version is left out, so a release does not change the snapshot. Other version-like
+    // text (the `--force` threshold "past 0.1.0") is part of the contract and stays as written.
+    snapshot('help.txt', r.stdout.replace(`l2m ${VERSION}:`, 'l2m <version>:'));
   });
 
   test('l2m.config.schema.json matches the snapshot', () => {

@@ -30,7 +30,7 @@ generate / prompt options
   --agent-cmd "<cmd> {prompt}" Any other agent; {prompt} / {prompt_file}, or stdin when neither is used
   --yolo                       Let the agent skip all permission checks (unsafe; off by default)
   --print                      Print the prompt instead of running the agent
-  --force                      Regenerate a document that is past <version>
+  --force                      Regenerate a document that is past 0.1.0
   --no-init                    Fail instead of running `l2m init` when there is no l2m.config.json
   change-request: --cr <ID> --summary "<change>" [--schema-diff <base>[..<head>]] [--affects "BRD, FRD"]
                   [--requested-by <name>] [--reason <text>] [--refs <links>] [--author <name>]
