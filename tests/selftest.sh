@@ -73,6 +73,8 @@ git add -A && git -c user.email=t@t -c user.name=t commit -qm docs
 echo "- extra" >> $F/BRD.md
 python3 "$D" bumpcheck --base HEAD docs/requirements > /dev/null && fail "bumpcheck should fail without a bump" || ok "bumpcheck catches unbumped edit"
 git checkout -q -- $F/BRD.md
+python3 "$D" bump $F/BRD.md --summary "test change" --dry-run | grep -q 'BRD.md: 0.1.0 -> 0.2.0' && [ ! -e $F/history ] \
+  && git diff --quiet -- $F/BRD.md && ok "bump --dry-run prints the next version and writes nothing" || fail "bump --dry-run"
 python3 "$D" bump $F/BRD.md --summary "test change" --sections 10 > /dev/null && echo "- extra" >> $F/BRD.md
 python3 "$D" bumpcheck --base HEAD docs/requirements > /dev/null && ok "bump → bumpcheck passes; history: $(ls $F/history)"
 python3 "$D" validate $F/FRD.md | grep -q STALE && ok "FRD flagged STALE after BRD bump"

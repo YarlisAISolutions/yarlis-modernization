@@ -108,7 +108,7 @@ Flags override it per run.
   l2m generate change-request --module accounts --feature account-update --cr CR-007 \
       --summary "Track the last transaction time on accounts" --schema-diff origin/main   # or <base>..<head>
   ```
-  `inventory.py schema-diff` compares the DDL at the two refs and writes `docs/analysis/schema-diff-*.md`: tables and columns added, removed or changed, the programs that use them (from the CRUD matrix) and the requirement IDs whose evidence points at those programs. The change-request prompt links it, and the agent follows the bump → edit → validate protocol.
+  `inventory.py schema-diff` compares the DDL at the two refs and writes `docs/analysis/schema-diff-*.md`: tables and columns added, removed or changed, the programs that use them (from the CRUD matrix) and the requirement IDs whose evidence points at those programs. The change-request prompt links it, and the agent follows the bump → edit → validate protocol. `l2m` works out each document's new version itself (the minor bump from `docver.py bump --dry-run`, for the documents in `--affects`) and gives it to the agent, so the same request on the same documents always gives the same numbers; the run fails if a document ends up at any other version.
 
 ### Agents
 
