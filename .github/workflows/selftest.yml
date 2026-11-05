@@ -1,12 +1,13 @@
 name: selftest
 
-# Exercises the three skill scripts and the l2m CLI end to end against tests/fixtures/mini on every change to them.
+# Exercises the three skill scripts and the l2m CLI end to end against tests/fixtures/mini on every change to them,
+# and re-runs the CardDemo walkthrough (docs/demo) against CardDemo at its pinned commit to catch drift in its output.
 on:
   pull_request:
-    paths: [".claude/skills/**", "tests/**", "test/**", "scripts/**", "bin/**", "lib/**", "prompts/**", "package.json", ".github/workflows/selftest.yml"]
+    paths: [".claude/skills/**", "tests/**", "test/**", "scripts/**", "bin/**", "lib/**", "prompts/**", "package.json", "docs/demo/**", "README.md", ".github/workflows/selftest.yml"]
   push:
     branches: [main]
-    paths: [".claude/skills/**", "tests/**", "test/**", "scripts/**", "bin/**", "lib/**", "prompts/**", "package.json"]
+    paths: [".claude/skills/**", "tests/**", "test/**", "scripts/**", "bin/**", "lib/**", "prompts/**", "package.json", "docs/demo/**", "README.md"]
 
 permissions:
   contents: read
@@ -38,3 +39,18 @@ jobs:
           L2M_BASH=1 bash scripts/install.sh /tmp/target --dry-run
       - name: Both install paths install the same files
         run: bash scripts/check-install-parity.sh
+
+  demo:
+    # Deterministic half of docs/demo/README.md: fetch CardDemo at the pinned commit, scan, slice, map, then linkify /
+    # trace / rtm sync / rtm summary / index on the committed documents. Fails on any drift or docver.py validate error.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.1'
+      - name: CardDemo walkthrough output has not drifted
+        run: bash scripts/check-demo.sh
