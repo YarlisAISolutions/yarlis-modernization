@@ -48,6 +48,7 @@ that layout.
 mkdir l2m-demo && cd l2m-demo
 export WORK="$PWD"
 git clone https://github.com/YarlisAISolutions/yarlis-modernization
+git -C yarlis-modernization checkout -q "$(git -C yarlis-modernization log -1 --format=%H -- docs/demo/output)"
 git init -q carddemo
 git -C carddemo remote add origin https://github.com/aws-samples/aws-mainframe-modernization-carddemo
 git -C carddemo fetch -q --depth 1 origin 59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e
@@ -55,8 +56,9 @@ git -C carddemo checkout -q FETCH_HEAD
 l2m() { node "$WORK/yarlis-modernization/bin/l2m.js" "$@"; }
 ```
 
-CardDemo is pinned to commit `59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e` (2025-10-16). The `l2m` function runs the CLI from
-your clone, so the demo matches the code you are reading. Once `@l2m/cli` 1.0 is on npm, `npx @l2m/cli@1` does the same.
+CardDemo is pinned to commit `59cc6c2fd7ebd7ef7925cad552a01a4b8b6e4d5e` (2025-10-16). The clone is pinned to the
+yarlis-modernization commit that last recorded `docs/demo/output`, so the templates and scripts you run are the ones that
+produced it, even after `main` moves on. The `l2m` function runs the CLI from that checkout.
 
 ## 2. Set up a project repository
 

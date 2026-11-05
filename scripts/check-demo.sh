@@ -4,8 +4,8 @@
 # linkify / trace / rtm sync / rtm summary / index must be unchanged, and the documents must pass docver.py validate and check.
 #
 # Usage: scripts/check-demo.sh [<carddemo-checkout>]
-#   With no argument it fetches CardDemo at CARDDEMO_SHA into a temp dir (needs network). A checkout you pass must be at
-#   CARDDEMO_SHA with origin set to CARDDEMO_URL (the mapping drafts link to it).
+#   With no argument it fetches CardDemo at CARDDEMO_SHA into a temp dir (needs network). A checkout you pass must be
+#   clean (no edits, untracked or ignored files), at CARDDEMO_SHA, with origin set to CARDDEMO_URL (the drafts link to it).
 #   L2M_UPDATE_DEMO=1 copies the regenerated files over docs/demo/output instead of failing (after a deliberate change).
 set -euo pipefail
 CARDDEMO_URL=https://github.com/aws-samples/aws-mainframe-modernization-carddemo
@@ -29,6 +29,8 @@ else
 fi
 head="$(git -C "$W/carddemo" rev-parse HEAD)"
 [ "$head" = "$CARDDEMO_SHA" ] || { echo "FAIL CardDemo is at $head, expected $CARDDEMO_SHA"; exit 1; }
+dirty="$(git -C "$W/carddemo/" status --porcelain --untracked-files=all --ignored)"
+[ -z "$dirty" ] || { echo "$dirty" | head -20; echo "FAIL the CardDemo checkout has local changes or extra files; use a clean one"; exit 1; }
 
 mkdir "$W/demo" && cd "$W/demo" && git init -q
 l2m init --src ../carddemo/app --project "CardDemo" --owner "Demo owner" --agents claude \
@@ -36,10 +38,11 @@ l2m init --src ../carddemo/app --project "CardDemo" --owner "Demo owner" --agent
 
 # Analysis: counts as reported in the walkthrough and README Results.
 l2m analyze scan --src ../carddemo/app --out docs/analysis > /dev/null
-python3 - docs/analysis/inventory.json <<'PY' && ok "scan: 46 programs, 25 transactions, 46 jobs, 21 screens, 0 unresolved" || fail=1
+python3 - docs/analysis/inventory.json <<'PY' && ok "scan: summary as published in docs/demo/README.md step 3" || fail=1
 import json, sys
 s = json.load(open(sys.argv[1]))["summary"]
-want = {"programs": 46, "transactions": 25, "jobs": 46, "screens": 21, "unresolved": 0}
+want = {"programs": 46, "copybooks": 65, "jobs": 46, "screens": 21, "transactions": 25, "tables": 3,
+        "unresolved": 0, "total_loc": 23018}
 got = {k: s[k] for k in want}
 if got != want:
     print(f"FAIL scan summary {got}, expected {want}"); sys.exit(1)

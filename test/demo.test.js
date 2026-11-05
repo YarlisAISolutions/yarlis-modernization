@@ -13,7 +13,19 @@ const DEMO = join(ROOT, 'docs/demo');
 const OUT = join(DEMO, 'output');
 const FEATURE = join(OUT, 'requirements/user-admin/sign-on');
 const DOCVER = join(ROOT, '.claude/skills/requirements-docs/scripts/docver.py');
-const LEGACY_EXT = /\.(cbl|cob|cpy|bms|jcl|csd|ddl|dcl|prc|proc|asm|mac|psb|dbd|ctl)$/i;
+const INVENTORY = join(ROOT, '.claude/skills/legacy-code-analysis/scripts/inventory.py');
+// Every extension the analyzer reads as legacy source or data (EXT_TYPES minus modern languages and plain docs).
+const MODERN = ['java', 'kotlin', 'scala', 'groovy', 'csharp', 'vbnet', 'python', 'ruby', 'go', 'javascript', 'typescript',
+  'php', 'c', 'cpp', 'rust', 'xml', 'json', 'yaml', 'properties', 'doc', 'text'];
+const legacyExtensions = () => {
+  const code = 'import importlib.util,json,sys\n'
+    + 's=importlib.util.spec_from_file_location("inv",sys.argv[1]);m=importlib.util.module_from_spec(s);s.loader.exec_module(m)\n'
+    + 'print(json.dumps(sorted(k for k,v in m.EXT_TYPES.items() if v not in json.loads(sys.argv[2]))))';
+  const r = spawnSync('python3', ['-c', code, INVENTORY, JSON.stringify(MODERN)], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  return JSON.parse(r.stdout);
+};
+const LEGACY_EXT = new RegExp(`\\.(${legacyExtensions().join('|')})$`, 'i');
 
 const read = (p) => readFileSync(p, 'utf8');
 const docver = (...args) => spawnSync('python3', [DOCVER, ...args], { encoding: 'utf8' });
@@ -75,6 +87,13 @@ describe('CardDemo demo (docs/demo)', () => {
     }
   });
 
+  test('the no-source guard covers every legacy extension the analyzer reads', () => {
+    for (const f of ['A.cbl', 'B.cob', 'C.cobol', 'D.copy', 'E.cpb', 'F.job', 'G.pli', 'H.pl1', 'I.rexx', 'J.rpg', 'K.CPY', 'L.ezt']) {
+      assert.match(f, LEGACY_EXT, f);
+    }
+    for (const f of ['README.md', 'slice.json', 'check-demo.sh', 'demo.test.js']) assert.doesNotMatch(f, LEGACY_EXT, f);
+  });
+
   test('no legacy source is committed: none under docs/demo, none outside the synthetic fixture', () => {
     const inDemo = walk(DEMO).filter((p) => LEGACY_EXT.test(p)).map((p) => relative(ROOT, p));
     assert.deepEqual(inDemo, []);
@@ -95,6 +114,8 @@ describe('CardDemo demo (docs/demo)', () => {
     const used = shBlocks(md).flatMap((b) => [...b.matchAll(/(?:^|[\s;&|(])l2m (\w[\w-]*)/g)].map((m) => m[1]));
     assert.ok(used.length >= 6, 'the walkthrough runs l2m commands');
     for (const cmd of used) assert.ok(cmd in contract.commands, `l2m ${cmd} is a command in test/cli-contract.json`);
+    assert.ok(shBlocks(md).some((b) => b.includes('log -1 --format=%H -- docs/demo/output')),
+      'the walkthrough checks out the yarlis-modernization commit that recorded docs/demo/output');
     for (const step of ['init', 'analyze scan', 'analyze slice', 'map', 'generate', 'docs rtm sync', 'docs validate']) {
       assert.ok(shBlocks(md).some((b) => b.includes(`l2m ${step}`)), `the walkthrough runs l2m ${step}`);
     }
