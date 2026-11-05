@@ -208,6 +208,9 @@ application (COBOL, CICS, BMS, JCL, VSAM, DB2, IMS, MQ; not included here). The 
 Both configurations found the same important legacy defects. The skills add the standard structure, versioned history,
 traceability, diagrams and clickable evidence. Expect more time and tokens per run in exchange.
 
+Run it yourself: [the CardDemo walkthrough](docs/demo/README.md) goes from scan to BRD, FRD, SRD, RTM, gap report and the
+React / Spring Boot / DB2 mapping for sign-on plus add user, with the generated documents in `docs/demo/output/`.
+
 ## Principles
 
 - **Never invent.** Unknown facts stay Unknown, become open questions with owners, and every requirement states its basis.

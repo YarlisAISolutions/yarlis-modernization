@@ -44,4 +44,8 @@ npm package `@l2m/cli`. Each skill is a `SKILL.md`, a stdlib-only Python script,
   `inventory.py scan --src <carddemo>/app --out /tmp/an` should report 0 unresolved references; then exercise
   `docver.py init/bump/linkify/trace/validate/rtm` on a scratch `docs/requirements`.
 - Documents cite evidence as `path:line` turned into links by `docver.py linkify`. Never paste legacy source into templates or examples.
+- `docs/demo/` is the public CardDemo walkthrough (sign-on CC00 + add user CU01, CardDemo pinned in `scripts/check-demo.sh`).
+  The `demo` job in `selftest.yml` runs `bash scripts/check-demo.sh`, which fails when a template, `docver.py` or `mapgen.py`
+  change alters the committed output. After a deliberate change: `L2M_UPDATE_DEMO=1 bash scripts/check-demo.sh` and review the diff.
+  `test/demo.test.js` checks the output without CardDemo. Never commit CardDemo source.
 - `skill-evals/` is local eval output and is git-ignored.

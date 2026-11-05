@@ -1,0 +1,60 @@
+{
+ "roots": [
+  "CC00",
+  "CU01"
+ ],
+ "programs": [
+  "COSGN00C",
+  "COUSR01C"
+ ],
+ "navigates_outside": [
+  "COADM01C",
+  "COMEN01C"
+ ],
+ "transactions": [
+  "CC00",
+  "CU01"
+ ],
+ "jobs": [
+  "DUSRSECJ",
+  "ESDSRRDS"
+ ],
+ "copybooks": [
+  "COCOM01Y",
+  "COSGN00",
+  "COTTL01Y",
+  "COUSR01",
+  "CSDAT01Y",
+  "CSMSG01Y",
+  "CSUSR01Y",
+  "DFHAID",
+  "DFHBMSCA"
+ ],
+ "tables": [],
+ "cics_files": [
+  "USRSEC"
+ ],
+ "datasets": [
+  "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS"
+ ],
+ "mapsets": [
+  "COSGN00",
+  "COUSR01"
+ ],
+ "files_to_read": [
+  "bms/COSGN00.bms",
+  "bms/COUSR01.bms",
+  "cbl/COSGN00C.cbl",
+  "cbl/COUSR01C.cbl",
+  "cpy-bms/COSGN00.CPY",
+  "cpy-bms/COUSR01.CPY",
+  "cpy/COCOM01Y.cpy",
+  "cpy/COTTL01Y.cpy",
+  "cpy/CSDAT01Y.cpy",
+  "cpy/CSMSG01Y.cpy",
+  "cpy/CSUSR01Y.cpy",
+  "csd/CARDDEMO.CSD",
+  "jcl/DUSRSECJ.jcl",
+  "jcl/ESDSRRDS.jcl"
+ ]
+}
