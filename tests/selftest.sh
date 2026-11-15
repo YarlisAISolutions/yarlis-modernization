@@ -111,12 +111,23 @@ printf 'hand-written\n' > "$W/in/sub/spec.docx.md"
 out="$(python3 "$D" convert "$W/in")" && fail "convert: should exit 1 when a hand-written file is in the way"
 grep -q 'was not written by l2m' <<< "$out" && grep -qx 'hand-written' "$W/in/sub/spec.docx.md" && ok "convert: never overwrites a hand-written .md"
 printf 'x' > "$W/in/broken.docx" && printf '%%PDF-1.4\n' > "$W/in/scan.pdf"
+python3 - "$W/in/sub/spec.docx" "$W/in/a-corrupt.docx" <<'PY'
+import sys  # a real zip whose document.xml bytes are damaged: opens fine, fails on read (bad CRC)
+data = bytearray(open(sys.argv[1], "rb").read())
+i = data.index(b"<w:body>")
+data[i:i + 8] = b"<w:BODY>"
+open(sys.argv[2], "wb").write(bytes(data))
+PY
 out="$(PATH=/nonexistent "$(command -v python3)" "$D" convert "$W/in" --force)" && fail "convert: should exit 1 on a skipped file"
 grep -q 'broken.docx: not a valid .docx' <<< "$out" && grep -q 'scan.pdf: PDF conversion needs pdftotext' <<< "$out" \
   && grep -q 'brew install poppler' <<< "$out" && ok "convert: broken docx and missing pdftotext are reported, not fatal"
-printf '#!/bin/sh\nprintf "Page one\\n\\fPage two\\n"\n' > "$W/fakebin/pdftotext" && chmod +x "$W/fakebin/pdftotext"
+grep -q 'a-corrupt.docx: BadZipFile' <<< "$out" && grep -q 'converted .*sub/spec.docx' <<< "$out" \
+  && ok "convert: a corrupt file inside a valid zip is skipped and later files still convert"
+rm "$W/in/a-corrupt.docx"
+printf '#!/bin/sh\nprintf "Page one\\n\\f1. Scope of CURR_BAL\\n"\n' > "$W/fakebin/pdftotext" && chmod +x "$W/fakebin/pdftotext"
 rm "$W/in/broken.docx"
 PATH="$W/fakebin:$PATH" python3 "$D" convert "$W/in" > /dev/null || fail "convert: pdf with pdftotext"
 grep -q '<!-- page 2 -->' "$W/in/scan.pdf.md" && grep -q '^Page one$' "$W/in/scan.pdf.md" && ok "convert: pdf through pdftotext, one marker per page"
+grep -qxF '1\. Scope of CURR_BAL' "$W/in/scan.pdf.md" && ok "convert: numbered lines escaped after the digits, underscores inside words kept"
 
 echo "all self-tests passed"

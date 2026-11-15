@@ -39,7 +39,7 @@ describe('converting Word and PDF inputs', { skip }, () => {
     const dir = project('with-tool');
     const bin = join(W, 'fake-bin');
     mkdirSync(bin);
-    writeFileSync(join(bin, 'pdftotext'), '#!/bin/sh\nprintf "Account limits\\nare checked daily.\\n\\n# not a heading\\n\\fPage two text\\n"\n');
+    writeFileSync(join(bin, 'pdftotext'), '#!/bin/sh\nprintf "Account limits\\nare checked daily.\\n\\n# not a heading\\n\\f1. Scope of CURR_BAL\\n"\n');
     chmodSync(join(bin, 'pdftotext'), 0o755);
     writeFileSync(join(dir, 'docs/inputs/notes.docx.md'), 'hand-written notes\n');
     spawnSync(python, [join(ROOT, 'tests/make_docx.py'), join(dir, 'docs/inputs/notes.docx')]);
@@ -51,7 +51,7 @@ describe('converting Word and PDF inputs', { skip }, () => {
     assert.match(docx, /^<!-- l2m convert v1: generated from spec\.docx \(sha256 [0-9a-f]{12}\)/);
     assert.equal(docx.split('\n').slice(2).join('\n'), expected());
     assert.equal(readFileSync(join(dir, 'docs/inputs/scan.pdf.md'), 'utf8').split('\n').slice(2).join('\n'),
-      '<!-- page 1 -->\n\nAccount limits\nare checked daily.\n\n\\# not a heading\n\n<!-- page 2 -->\n\nPage two text\n');
+      '<!-- page 1 -->\n\nAccount limits\nare checked daily.\n\n\\# not a heading\n\n<!-- page 2 -->\n\n1\\. Scope of CURR_BAL\n');
     assert.equal(readFileSync(join(dir, 'docs/inputs/notes.docx.md'), 'utf8'), 'hand-written notes\n', 'a file l2m did not write is kept');
     assert.match(r.stderr, /converted docs\/inputs\/spec\.docx -> docs\/inputs\/spec\.docx\.md/);
     assert.match(r.stderr, /Warning: skip docs\/inputs\/notes\.docx: notes\.docx\.md exists and was not written by l2m/);
@@ -66,6 +66,16 @@ describe('converting Word and PDF inputs', { skip }, () => {
     assert.equal(again.status, 0, again.stderr);
     assert.doesNotMatch(again.stderr, /converted/);
     assert.equal(statSync(join(dir, 'docs/inputs/spec.docx.md')).mtimeMs, before);
+  });
+
+  test('a single file given with --docs brings its Markdown conversion into the manifest', () => {
+    const dir = project('single-file');
+    const r = l2m(dir, ['prompt', 'analysis', '--scope', 'everything', '--docs', 'docs/inputs/spec.docx'],
+      { ...process.env, PATH: join(W, 'no-such-dir'), L2M_PYTHON: python });
+    assert.equal(r.status, 0, r.stderr);
+    const manifest = readFileSync(join(dir, 'docs/analysis/inputs.md'), 'utf8');
+    assert.match(manifest, /\| document \| \[docs\/inputs\/spec\.docx\]/);
+    assert.match(manifest, /\| document \| \[docs\/inputs\/spec\.docx\.md\]/);
   });
 
   test('without pdftotext the PDF is skipped with the install command and the step still succeeds', () => {
