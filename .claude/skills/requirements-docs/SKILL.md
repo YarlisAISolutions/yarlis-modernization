@@ -38,6 +38,8 @@ docs/requirements/
 - After every change, run `python3 $D index docs/requirements`. CI runs `docver.py check docs/requirements` (layout, structure, traces,
   unique doc_ids, INDEX up to date) and `docver.py bumpcheck --base origin/main` (content changed ⇒ version bumped).
 - A single-document-set project can still use `docs/requirements/` directly (`check --layout any`).
+- Word and PDF inputs: `python3 $D convert docs/inputs` writes `<name>.docx.md` / `<name>.pdf.md` next to each one (`l2m generate`
+  does this itself). Read and cite the Markdown version; `.docx` needs nothing extra, `.pdf` needs `pdftotext` (Poppler) on PATH.
 
 ## Choose what to produce
 

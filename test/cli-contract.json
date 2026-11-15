@@ -178,7 +178,8 @@
       "diff": "stable",
       "index": "stable",
       "check": "stable",
-      "bumpcheck": "stable"
+      "bumpcheck": "stable",
+      "convert": "experimental"
     }
   },
   "exitCodes": {
