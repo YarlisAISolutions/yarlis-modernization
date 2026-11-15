@@ -12,10 +12,10 @@ Deterministic tools (arguments go straight to the bundled scripts; add --help to
   analyze <cmd> ...    inventory.py: scan | slice | domains | schema-diff
   map ...              mapgen.py: legacy → React / Spring Boot / Spring Batch / DB2 mapping
   docs <cmd> ...       docver.py: init | new-feature | bump | validate | linkify | trace | rtm | status | diff |
-                       index | check | bumpcheck
+                       index | check | bumpcheck | convert (Word/PDF inputs → Markdown; PDF needs pdftotext)
 
 Agent workflow
-  generate <step>      Prepare inputs, scaffold, run the agent, then linkify + trace + validate + index
+  generate <step>      Prepare inputs (Word/PDF → Markdown), scaffold, run the agent, then linkify + trace + validate + index
                        steps: analysis | brd | frd | srd | all (brd → frd → srd) | change-request | assess
   prompt <step>        Print the filled prompt instead of running an agent (same options as generate)
 

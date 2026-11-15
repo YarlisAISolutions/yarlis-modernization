@@ -19,6 +19,7 @@ Commands
   rtm       sync: create/refresh RTM rows from BRD/FRD/SRD (keeps assessments); summary: counts into GAP/RTM.
   status    Versions and staleness of all documents.
   diff      Sections changed since the previous (or a given) version.
+  convert   Word (.docx) and PDF inputs -> Markdown next to the original (convert.py; PDF needs pdftotext).
 
 Versioning: patch = editorial; minor = content change (default per iteration); major = baseline/approval.
 Stdlib only. Python 3.9+.
@@ -1110,6 +1111,13 @@ def cmd_diff(a):
         sys.stdout.writelines(difflib.unified_diff(old.text.splitlines(True), d.text.splitlines(True), str(snap), str(d.path)))
 
 
+def _converter():
+    """convert.py sits next to this script and holds the .docx/.pdf -> Markdown conversion."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import convert
+    return convert
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1184,7 +1192,11 @@ def main():
     df.add_argument("path")
     df.add_argument("--against")
     df.add_argument("--full", action="store_true")
+    cv = sub.add_parser("convert", help="write <name>.docx.md / <name>.pdf.md next to Word and PDF inputs (PDF needs pdftotext)")
+    _converter().add_arguments(cv)
     a = ap.parse_args()
+    if a.cmd == "convert":
+        sys.exit(_converter().run(a))
     {"init": cmd_init, "new-feature": cmd_new_feature, "index": cmd_index, "check": cmd_check, "bumpcheck": cmd_bumpcheck, "bump": cmd_bump, "validate": cmd_validate, "linkify": cmd_linkify, "trace": cmd_trace,
      "rtm": cmd_rtm, "status": cmd_status, "diff": cmd_diff}[a.cmd](a)
 

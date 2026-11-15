@@ -93,4 +93,41 @@ git add -A && git -c user.email=t@t -c user.name=t commit -qm "schema change"
 python3 "$INV" schema-diff --src src --base HEAD~1 --head HEAD --inventory "$W/analysis/inventory.json" --json | grep -q '"kind": "changed"' && ok "schema-diff between two refs"
 python3 "$INV" schema-diff --src src --base HEAD --inventory "$W/analysis/inventory.json" | grep -q '^0 tables' && ok "schema-diff: no change → empty report"
 
+# --- convert: Word and PDF inputs → Markdown (MOD-9). The PDF cases use a fake pdftotext / an empty PATH.
+mkdir -p "$W/in/sub" "$W/fakebin"
+python3 "$ROOT/tests/make_docx.py" "$W/in/sub/spec.docx"
+python3 "$D" convert "$W/in" > /dev/null || fail "convert: docx"
+python3 - "$ROOT/tests" "$W/in/sub/spec.docx.md" <<'PY' || exit 1
+import sys
+sys.path.insert(0, sys.argv[1])
+import make_docx
+got = open(sys.argv[2], encoding="utf-8").read().split("\n", 2)
+if not got[0].startswith("<!-- l2m convert v1: generated from spec.docx (sha256 ") or got[2] != make_docx.EXPECTED:
+    print("FAIL convert: docx headings, lists, links, table, tracked changes"); print("".join(got)); sys.exit(1)
+print("ok   convert: docx headings, lists, links, table, tracked changes")
+PY
+python3 "$D" convert "$W/in" | grep -q '^0 converted, 1 up to date, 0 skipped' && ok "convert: unchanged input is not rewritten"
+printf 'hand-written\n' > "$W/in/sub/spec.docx.md"
+out="$(python3 "$D" convert "$W/in")" && fail "convert: should exit 1 when a hand-written file is in the way"
+grep -q 'was not written by l2m' <<< "$out" && grep -qx 'hand-written' "$W/in/sub/spec.docx.md" && ok "convert: never overwrites a hand-written .md"
+printf 'x' > "$W/in/broken.docx" && printf '%%PDF-1.4\n' > "$W/in/scan.pdf"
+python3 - "$W/in/sub/spec.docx" "$W/in/a-corrupt.docx" <<'PY'
+import sys  # a real zip whose document.xml bytes are damaged: opens fine, fails on read (bad CRC)
+data = bytearray(open(sys.argv[1], "rb").read())
+i = data.index(b"<w:body>")
+data[i:i + 8] = b"<w:BODY>"
+open(sys.argv[2], "wb").write(bytes(data))
+PY
+out="$(PATH=/nonexistent "$(command -v python3)" "$D" convert "$W/in" --force)" && fail "convert: should exit 1 on a skipped file"
+grep -q 'broken.docx: not a valid .docx' <<< "$out" && grep -q 'scan.pdf: PDF conversion needs pdftotext' <<< "$out" \
+  && grep -q 'brew install poppler' <<< "$out" && ok "convert: broken docx and missing pdftotext are reported, not fatal"
+grep -q 'a-corrupt.docx: BadZipFile' <<< "$out" && grep -q 'converted .*sub/spec.docx' <<< "$out" \
+  && ok "convert: a corrupt file inside a valid zip is skipped and later files still convert"
+rm "$W/in/a-corrupt.docx"
+printf '#!/bin/sh\nprintf "Page one\\n\\f1. Scope of CURR_BAL\\n"\n' > "$W/fakebin/pdftotext" && chmod +x "$W/fakebin/pdftotext"
+rm "$W/in/broken.docx"
+PATH="$W/fakebin:$PATH" python3 "$D" convert "$W/in" > /dev/null || fail "convert: pdf with pdftotext"
+grep -q '<!-- page 2 -->' "$W/in/scan.pdf.md" && grep -q '^Page one$' "$W/in/scan.pdf.md" && ok "convert: pdf through pdftotext, one marker per page"
+grep -qxF '1\. Scope of CURR_BAL' "$W/in/scan.pdf.md" && ok "convert: numbered lines escaped after the digits, underscores inside words kept"
+
 echo "all self-tests passed"

@@ -120,6 +120,7 @@ Help text wording is part of the snapshot, so a change to it needs a snapshot up
 | `index` | stable |
 | `check` | stable |
 | `bumpcheck` | stable |
+| `convert` | experimental |
 
 ## Configuration
 
@@ -159,4 +160,5 @@ Help text wording is part of the snapshot, so a change to it needs a snapshot up
 
 Record every change to a stable or experimental item here, newest first.
 
+- Unreleased: `docs convert` added as experimental; `generate` and `prompt` now convert `.docx` and `.pdf` inputs to Markdown before writing the inputs manifest (MOD-9).
 - 0.1.0: first contract (MOD-3).
